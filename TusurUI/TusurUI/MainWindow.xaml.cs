@@ -16,6 +16,9 @@ namespace TusurUI
     {
         private DispatcherTimer? _comPortUpdateTimer;
         private DispatcherTimer? _statusCheckTimer;
+        private DispatcherTimer? _timerCountdown; // Timer for the power supply (power supply turned off when timer is 0)
+        private int _remainingSeconds;
+        private bool _isDirectCountdown = false;
 
         private bool isVaporizerWorks = false;
         private double currentValue { get; set; }
@@ -120,6 +123,92 @@ namespace TusurUI
             {
                 PowerSupplyComPortComboBox.IsEnabled = false;
                 ShutterComPortComboBox.IsEnabled = false;
+            }
+        }
+
+        private void TimerTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (sender is TextBox textBox)
+            {
+                if (int.TryParse(textBox.Text, out int minutes) && minutes > 0)
+                {
+                    textBox.ClearValue(Border.BorderBrushProperty);
+                    textBox.ClearValue(Border.BorderThicknessProperty);
+                    StartButton.IsEnabled = true;
+                    textBox.ToolTip = "Введите значение в минутах";
+                }
+                else
+                {
+                    textBox.BorderBrush = new SolidColorBrush(Colors.Red);
+                    textBox.BorderThickness = new Thickness(1);
+                    StartButton.IsEnabled = false;
+                    textBox.ToolTip = "Неверное значение. Допустимый диапазон: > 0 минут";
+                }
+            }
+        }
+
+        private void TimerTextBox_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        {
+            e.Handled = !IsValidTimerInput(e.Text);
+        }
+
+        private bool IsValidTimerInput(string text)
+        {
+            return text.All(char.IsDigit);
+        }
+
+        private void StartCountdown()
+        {
+            if (string.IsNullOrWhiteSpace(TimerTextBox.Text))
+            {
+                // Direct countdown if timer text box is empty
+                _remainingSeconds = 0;
+                _isDirectCountdown = true;
+            }
+            else if (int.TryParse(TimerTextBox.Text, out int minutes) && minutes > 0)
+            {
+                // Reverse countdown if timer text box isn't empty
+                _remainingSeconds = minutes * 60;
+                TimerTextBox.IsReadOnly = true;
+                _isDirectCountdown = false;
+            }
+            else
+            {
+                ShowError("Введите корректное значение в минутах.");
+                return;
+            }
+
+            _timerCountdown = new DispatcherTimer();
+            _timerCountdown.Interval = TimeSpan.FromSeconds(1);
+            _timerCountdown.Tick += TimerCountdown_Tick;
+            _timerCountdown.Start();
+        }
+
+        private void ResetTimer()
+        {
+            _timerCountdown?.Stop();
+            TimerTextBox.IsReadOnly = false;
+            TimerTextBox.Text = string.Empty;
+        }
+
+        private void TimerCountdown_Tick(object? sender, EventArgs e)
+        {
+            if (_isDirectCountdown)
+            {
+                _remainingSeconds++;
+                TimerTextBox.Text = $"{_remainingSeconds / 60}:{_remainingSeconds % 60:D2}";
+            }
+            else
+            {
+                if (_remainingSeconds > 0)
+                {
+                    _remainingSeconds--;
+                    TimerTextBox.Text = $"{_remainingSeconds / 60}:{_remainingSeconds % 60:D2}";
+                }
+                else
+                {
+                    ResetTimer();
+                }
             }
         }
 
@@ -390,6 +479,8 @@ namespace TusurUI
 
             CurrentValueLabel.Content = "0 A";
             VoltageValueLabel.Content = "0 В";
+
+            ResetTimer();
         }
 
         private void SetShutterImageToClosed() { ComponentManager.ChangeIndicatorPicture(Vaporizer, "Images/заслонка закр фото.png"); }
@@ -451,6 +542,8 @@ namespace TusurUI
                     ApplyVoltageOnPowerSupply();
                     ReadCurrentVoltageAndChangeTextBox();
                     ResetZP();
+
+                    StartCountdown();
                 }
                 catch (Exception ex)
                 {

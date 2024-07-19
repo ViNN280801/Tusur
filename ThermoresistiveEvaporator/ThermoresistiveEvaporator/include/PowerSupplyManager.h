@@ -5,14 +5,10 @@
 #endif
 
 #include <memory>
-<<<<<<< HEAD
- 
-=======
 #include <chrono>
 #include <thread>
 #include <functional>
 
->>>>>>> 82f56004547fa7f0189fa94205ab118a0ffeeade
 #include "modbus.h"
 #include "Constants.h"
 
@@ -104,8 +100,8 @@ public:
 	int turn_off();
 
 	/**
-	 * @brief Resets "«œ" register of the power supply.
-	 *		  Sends a command to reset the "«œ" register of the power supply.
+	 * @brief Resets "√á√è" register of the power supply.
+	 *		  Sends a command to reset the "√á√è" register of the power supply.
 	 * @return int Status code indicating success (STATUS_OK) or specific error.
 	 */
 	int reset_zp();
