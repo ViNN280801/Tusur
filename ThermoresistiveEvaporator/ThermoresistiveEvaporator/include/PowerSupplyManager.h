@@ -5,6 +5,9 @@
 #endif
 
 #include <memory>
+#include <chrono>
+#include <thread>
+#include <functional>
 
 #include "modbus.h"
 #include "Constants.h"
@@ -22,7 +25,7 @@ class POWERSUPPLYMANAGER_API PowerSupplyManager
 private:
 	uint16_t buffer[kbuffer_size];                       ///< Buffer for storing Modbus data.
 	std::unique_ptr<modbus_t, void(*)(modbus_t*)> m_ctx; ///< Unique pointer to Modbus context with custom deleter.
-
+	int timer_val{};
 public:
 	/**
 	 * @brief Constructor that initializes the power supply manager with a given port.
@@ -102,6 +105,19 @@ public:
 	 * @return int Status code indicating success (STATUS_OK) or specific error.
 	 */
 	int reset_zp();
+	/**
+	*@brief Set the timer, i.e. set the value of "timer_val"
+	*	Timer is user defined on the HMI
+	*	The value will be in minutes
+	* @return void function, returns nothing
+	*/
+	void set_timer(int t) { timer_val = t; }
+	/**
+	* @brief A funcntion to turn the power supply block and then turn it off using a timer
+	*	Timer is defined by the user and is stored as as the timer value "timer_val"
+	* @return int Status code indicating success (STATUS_OK) or specific error
+	*/
+	int turn_on_with_timer();
 };
 
 ///< Global instance of the extern variable with defaulted value of COM-port.
@@ -121,4 +137,8 @@ extern "C" {
 	POWERSUPPLYMANAGER_API int PowerSupply_ReadVoltage() { return g_PowerSupply.read_voltage(); }
 
 	POWERSUPPLYMANAGER_API int PowerSupply_ResetZP() { return g_PowerSupply.reset_zp(); }
+
+	POWERSUPPLYMANAGER_API void PowerSupply_SetTimer(int t) { g_PowerSupply.set_timer(t); }
+
+	POWERSUPPLYMANAGER_API int PowerSupply_TurnOnWithTimer() { return g_PowerSupply.turn_on_with_timer(); }
 }
