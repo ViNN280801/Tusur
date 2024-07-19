@@ -1,0 +1,52 @@
+﻿<Window x:Class="TusurUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TusurUI"
+        mc:Ignorable="d"
+        WindowState="Maximized"
+        Title="Управление Испарителем" Height="877" Width="1325" Closed="Window_Closed">
+    <Window.Resources/>
+    <Grid Margin="0,0,0,-6">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="192*"/>
+            <RowDefinition Height="97*"/>
+        </Grid.RowDefinitions>
+        <ToolBar VerticalAlignment="Top" Height="25">
+            <ComboBox x:Name="PowerSupplyComPortComboBox" Width="90" ToolTip="Выбор COM порта для управления блоком питания" SelectionChanged="ComboBox_SelectionChanged"/>
+            <ComboBox x:Name="ShutterComPortComboBox" Width="90" ToolTip="Выбор COM порта для управления заслонкой" SelectionChanged="ComboBox_SelectionChanged"/>
+        </ToolBar>
+
+        <Image x:Name="Indicator" HorizontalAlignment="Left" Height="98" Margin="564,115,0,0" VerticalAlignment="Top" Width="102" Source="/Images/индикатор откл.jpg"/>
+        <Image x:Name="Vaporizer" Margin="736,28,15,29" Source="Images/заслонка закр фото.png" Grid.RowSpan="2"/>
+        <Label Content="Управление испарителем" Style="{DynamicResource MainLabel}" HorizontalAlignment="Left" Margin="36,28,0,0" VerticalAlignment="Top" Height="75" Width="585"/>
+        <Label Style="{DynamicResource StateTurnedOffLabel}" Content="Откл" HorizontalAlignment="Left" Margin="115,80,0,0" VerticalAlignment="Top" Height="42" Width="78"/>
+        <Label Style="{DynamicResource StateTurnedOnLabel}" Content="Вкл" HorizontalAlignment="Left" Margin="294,80,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.317,-0.04" Height="47" Width="70"/>
+        <ToggleButton x:Name="VaporizerButtonBase" Style="{DynamicResource ToggleButtonStyle}" BorderThickness="2" HorizontalAlignment="Left" Margin="115,127,0,0" VerticalAlignment="Top" Height="81" Width="259" IsChecked="False" Checked="VaporizerButtonBase_Checked" Unchecked="VaporizerButtonBase_Unchecked">
+            <Grid Height="71" Width="249">
+                <DockPanel LastChildFill="False">
+                    <ToggleButton x:Name="VaporizerButtonInside" Style="{DynamicResource InsideSwitchButton}" Content="" Width="77"/>
+                </DockPanel>
+            </Grid>
+        </ToggleButton>
+
+        <Label Content="Задание величины тока" Style="{DynamicResource MainLabel}" HorizontalAlignment="Left" Margin="36,213,0,0" VerticalAlignment="Top" Height="75" Width="585"/>
+        <TextBox x:Name="CurrentSetPointTextBox" Style="{DynamicResource TextBoxStyle}" ToolTip="Введите значение от 0 до 200" HorizontalAlignment="Left" Margin="52,289,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="170" Height="55" TextChanged="CurrentSetPointTextBox_TextChanged" PreviewTextInput="CurrentSetPointTextBox_PreviewTextInput"/>
+        <Button x:Name="StartButton" Style="{DynamicResource StartButton}" IsEnabled="False" Content="ЗАПУСК" HorizontalAlignment="Left" Margin="328,288,0,0" VerticalAlignment="Top" Height="56" Width="162" Click="StartButton_Click"/>
+
+        <Label Content="Управление заслонкой" Style="{DynamicResource MainLabel}" HorizontalAlignment="Left" Margin="36,388,0,0" VerticalAlignment="Top" Height="75" Width="585"/>
+        <Label Content="Состояние системы:" Style="{DynamicResource MainLabel}" HorizontalAlignment="Left" Margin="36,29,0,0" VerticalAlignment="Top" Height="48" Width="391" Grid.Row="1"/>
+        <Label Content="Сила тока" Style="{DynamicResource MainLabel}" HorizontalAlignment="Left" Margin="39,159,0,0" VerticalAlignment="Top" Height="48" Width="290" Grid.Row="1"/>
+        <Label x:Name="SystemStateLabel" Content="Система не работает" Style="{DynamicResource SystemStateLabel}" HorizontalAlignment="Left" Margin="432,29,0,0" VerticalAlignment="Top" Height="55" Width="362" Grid.Row="1"/>
+        <Label x:Name="CurrentValueLabel" Style="{DynamicResource AdditionalLabel}" HorizontalAlignment="Left" Margin="334,159,0,0" VerticalAlignment="Top" Height="48" Width="231" Content="0 A" Grid.Row="1"/>
+        <Label Style="{DynamicResource AdditionalLabel}" HorizontalAlignment="Left" Margin="232,293,0,0" VerticalAlignment="Top" Height="48" Width="42" Content="A"/>
+        <Button x:Name="StopStepMotorButton" Style="{DynamicResource StopMotorButton}" Background="White" Content="Стоп" HorizontalAlignment="Left" Margin="370,456,0,0" VerticalAlignment="Top" Height="74" Width="80" Click="StopStepMotorButton_Click"/>
+        <Button x:Name="CloseShutterButton" Style="{DynamicResource StopMotorButton}" Background="White" Content="Закр" HorizontalAlignment="Left" Margin="213,456,0,0" VerticalAlignment="Top" Height="74" Width="80" Click="CloseShutterButton_Click"/>
+        <Button x:Name="OpenShutterButton" Style="{DynamicResource StopMotorButton}" Background="White" Content="Откр" HorizontalAlignment="Left" Margin="52,456,0,0" VerticalAlignment="Top" Height="74" Width="80" Click="OpenShutterButton_Click"/>
+        <Label Content="Напряжение" Style="{DynamicResource MainLabel}" HorizontalAlignment="Left" Margin="38,207,0,0" VerticalAlignment="Top" Height="48" Width="290" Grid.Row="1"/>
+        <Label x:Name="VoltageValueLabel" Style="{DynamicResource AdditionalLabel}" HorizontalAlignment="Left" Margin="334,207,0,0" VerticalAlignment="Top" Height="48" Width="231" Content="0 В" Grid.Row="1"/>
+        <Label Content="Параметры испарителя:" Style="{DynamicResource MainLabel}" HorizontalAlignment="Left" Margin="36,106,0,0" VerticalAlignment="Top" Height="48" Width="451" Grid.Row="1"/>
+        <!--<Button x:Name="ResetZPButton" Style="{DynamicResource StopMotorButton}" Content="ЗП" HorizontalAlignment="Left" Margin="409,130,0,0" VerticalAlignment="Top" Height="74" Width="80" Click="ResetZPButton_Click"/>-->
+    </Grid>
+</Window>
