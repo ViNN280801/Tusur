@@ -108,17 +108,17 @@ public:
 extern POWERSUPPLYMANAGER_API PowerSupplyManager g_PowerSupply;
 
 extern "C" {
-	POWERSUPPLYMANAGER_API int PowerSupplyManager_Connect(const char* port) { return g_PowerSupply.connect(port); }
+	POWERSUPPLYMANAGER_API int PowerSupply_Connect(const char* port) { return g_PowerSupply.connect(port); }
 
-	POWERSUPPLYMANAGER_API int PowerSupplyManager_SetCurrentVoltage(uint16_t current, uint16_t voltage) { return g_PowerSupply.set_current_voltage(current, voltage); }
+	POWERSUPPLYMANAGER_API int PowerSupply_SetCurrentVoltage(uint16_t current, uint16_t voltage) { return g_PowerSupply.set_current_voltage(current, voltage); }
 
-	POWERSUPPLYMANAGER_API int PowerSupplyManager_TurnOn() { return g_PowerSupply.turn_on(); }
+	POWERSUPPLYMANAGER_API int PowerSupply_TurnOn() { return g_PowerSupply.turn_on(); }
 
-	POWERSUPPLYMANAGER_API int PowerSupplyManager_TurnOff() { return g_PowerSupply.turn_off(); }
+	POWERSUPPLYMANAGER_API int PowerSupply_TurnOff() { return g_PowerSupply.turn_off(); }
 
-	POWERSUPPLYMANAGER_API int PowerSupplyManager_ReadCurrent() { return g_PowerSupply.read_current(); }
+	POWERSUPPLYMANAGER_API int PowerSupply_ReadCurrent() { return g_PowerSupply.read_current(); }
 
-	POWERSUPPLYMANAGER_API int PowerSupplyManager_ReadVoltage() { return g_PowerSupply.read_voltage(); }
+	POWERSUPPLYMANAGER_API int PowerSupply_ReadVoltage() { return g_PowerSupply.read_voltage(); }
 
-	POWERSUPPLYMANAGER_API int PowerSupplyManager_ResetZP() { return g_PowerSupply.reset_zp(); }
+	POWERSUPPLYMANAGER_API int PowerSupply_ResetZP() { return g_PowerSupply.reset_zp(); }
 }
