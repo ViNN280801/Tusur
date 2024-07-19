@@ -4,25 +4,25 @@ namespace TusurUI.ExternalSources
 {
     public class StepMotor
     {
-        [DllImport("Libs/StepMotor.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport("Libs/ThermoresistiveEvaporator.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         private static extern int StepMotor_Connect(string port);
 
-        [DllImport("Libs/StepMotor.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("Libs/ThermoresistiveEvaporator.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int StepMotor_Forward();
 
-        [DllImport("Libs/StepMotor.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("Libs/ThermoresistiveEvaporator.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int StepMotor_Reverse();
 
-        [DllImport("Libs/StepMotor.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("Libs/ThermoresistiveEvaporator.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int StepMotor_Stop();
 
-        [DllImport("Libs/StepMotor.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("Libs/ThermoresistiveEvaporator.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int StepMotor_GetLastState();
 
-        [DllImport("Libs/StepMotor.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("Libs/ThermoresistiveEvaporator.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int StepMotor_IsForwardButtonPressed();
 
-        [DllImport("Libs/StepMotor.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("Libs/ThermoresistiveEvaporator.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int StepMotor_IsReverseButtonPressed();
 
         public StepMotor() { }

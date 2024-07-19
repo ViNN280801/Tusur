@@ -4,25 +4,25 @@ namespace TusurUI.Source
 {
     public class PowerSupply
     {
-        [DllImport("Libs/PowerSupply.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport("Libs/ThermoresistiveEvaporator.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         private static extern int PowerSupply_Connect(string port);
 
-        [DllImport("Libs/PowerSupply.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("Libs/ThermoresistiveEvaporator.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int PowerSupply_SetCurrentVoltage(ushort current, ushort voltage);
 
-        [DllImport("Libs/PowerSupply.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("Libs/ThermoresistiveEvaporator.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int PowerSupply_ReadCurrent();
 
-        [DllImport("Libs/PowerSupply.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("Libs/ThermoresistiveEvaporator.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int PowerSupply_ReadVoltage();
 
-        [DllImport("Libs/PowerSupply.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("Libs/ThermoresistiveEvaporator.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int PowerSupply_TurnOn();
 
-        [DllImport("Libs/PowerSupply.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("Libs/ThermoresistiveEvaporator.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int PowerSupply_TurnOff();
 
-        [DllImport("Libs/PowerSupply.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("Libs/ThermoresistiveEvaporator.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int PowerSupply_ResetZP();
 
         PowerSupply() { }
@@ -89,8 +89,8 @@ namespace TusurUI.Source
                 _ => "Language not supported."
             };
 
-            return language == "RU" ? $"PowerSupply.dll: Код ошибки: {errorCode}. Сообщение: {message}"
-                : $"PowerSupply.dll:Error code: {errorCode}. Message: {message}";
+            return language == "RU" ? $"ThermoresistiveEvaporator.dll: Код ошибки: {errorCode}. Сообщение: {message}"
+                : $"ThermoresistiveEvaporator.dll:Error code: {errorCode}. Message: {message}";
         }
     }
 }

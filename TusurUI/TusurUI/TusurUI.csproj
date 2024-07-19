@@ -61,9 +61,16 @@
     <None Update="Libs\StepMotor.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Libs\ThermoresistiveEvaporator.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Libs\TUSURCPPTestProjectv1.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Libs\" />
   </ItemGroup>
 
 </Project>
