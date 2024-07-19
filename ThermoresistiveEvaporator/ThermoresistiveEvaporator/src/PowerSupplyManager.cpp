@@ -110,17 +110,24 @@ int PowerSupplyManager::reset_zp()
 
 int PowerSupplyManager::turn_on_with_timer()
 {
-	// 1. If "timer_val" is zero or negative
-	if (timer_val <= 0) {
+	// 1. If "timer_val" is negative
+	if (timer_val < 0) {
 		return PS_ERROR_UNSUPPORTED_TIMER_VALUE;
 	}
-	// 2. timer_val is a positive value, then the power supply has to be turned on
+	// 2. If timer value is 0, then it the usual "turn_on" will be executed
+	else if (timer_val == 0)
+		return PowerSupplyManager::turn_on();
+	// 3. The timer value is positive, so timer operation will start
 	else {
+		// 4. The power supply will turn on
+
 		if (not(PowerSupplyManager::turn_on()))
 			return PS_ERROR_POWER_SUPPLY_TURN_ON_FAILED;
-		// 3. Power supply remains on as specified by user 
+
+		// 5. Now the operation will be paused for user specified amount of time (minutes)
+
 		std::this_thread::sleep_for(std::chrono::minutes(timer_val));
 	}
-	// 4. Power supply has to be turned off after user specified amount of minutes
+	// 6. Power supply has to be turned off after user specified amount of minutes
 	return PowerSupplyManager::turn_off();
 }
