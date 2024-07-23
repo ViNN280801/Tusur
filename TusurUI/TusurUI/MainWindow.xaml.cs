@@ -13,7 +13,7 @@ namespace TusurUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly TimerManager _timerManager;
+        private readonly PowerSuplyTimerManager _psTimerManager;
 
         private DispatcherTimer? _comPortUpdateTimer;
 
@@ -30,7 +30,7 @@ namespace TusurUI
             InitializeComPortUpdateTimer();
             PopulateComPortComboBoxes();
 
-            _timerManager = new TimerManager(TimerTextBox);
+            _psTimerManager = new PowerSuplyTimerManager(TimerTextBox);
 
             // If shutter opened when program started - change icon.
             if (IsShutterOpened())
@@ -93,7 +93,7 @@ namespace TusurUI
 
         private void TimerTextBox_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
         {
-            e.Handled = !_timerManager.IsValidTimerInput(e.Text);
+            e.Handled = !_psTimerManager.IsValidTimerInput(e.Text);
         }
 
         private void StartButtonActivate() { StartButton.IsEnabled = true; }
@@ -103,8 +103,8 @@ namespace TusurUI
         {
             try
             {
-                if (_timerManager != null)
-                    _timerManager.StartCountdown(TimerTextBox);
+                if (_psTimerManager != null)
+                    _psTimerManager.StartCountdown(TimerTextBox);
                 else
                     throw new Exception("Internal error: TimerManager is uninitialized");
             }
@@ -405,7 +405,7 @@ namespace TusurUI
             CurrentValueLabel.Content = "0 A";
             VoltageValueLabel.Content = "0 В";
 
-            _timerManager.ResetTimer();
+            _psTimerManager.ResetTimer();
         }
 
         private void SetShutterImageToClosed() { ComponentManager.ChangeIndicatorPicture(Vaporizer, "Images/заслонка закр фото.png"); }
