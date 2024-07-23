@@ -14,10 +14,12 @@ public class PowerSupplyTimerManager : IPowerSupplyTimerManager
     private int _remainingSeconds;
     private bool _isDirectCountdown = false;
     private TextBox _timerTextBox;
+    private readonly Action _turnOffPowerSupply;
 
-    public PowerSupplyTimerManager(TextBox timerTextBox)
+    public PowerSupplyTimerManager(TextBox timerTextBox, Action turnOffPowerSupply)
     {
         _timerTextBox = timerTextBox ?? throw new ArgumentNullException(nameof(timerTextBox));
+        _turnOffPowerSupply = turnOffPowerSupply ?? throw new ArgumentNullException(nameof(turnOffPowerSupply));
     }
 
     public void StartCountdown()
@@ -77,6 +79,7 @@ public class PowerSupplyTimerManager : IPowerSupplyTimerManager
             }
             else
             {
+                _turnOffPowerSupply();
                 ResetTimer();
             }
         }

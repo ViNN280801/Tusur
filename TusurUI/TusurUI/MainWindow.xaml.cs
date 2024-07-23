@@ -33,7 +33,7 @@ namespace TusurUI
             InitializeComponent();
 
             _uiHelper = new UIHelper(Vaporizer, SystemStateLabel, VaporizerButtonBase, VaporizerButtonInside, Indicator, CurrentValueLabel, VoltageValueLabel);
-            _powerSupplyTimerManager = new PowerSupplyTimerManager(TimerTextBox);
+            _powerSupplyTimerManager = new PowerSupplyTimerManager(TimerTextBox, TurnOffPowerSupply);
             _powerSupplyComPortManager = new ComPortManager(PowerSupplyComPortComboBox);
             _stepMotorComPortManager = new ComPortManager(ShutterComPortComboBox);
             _powerSupplyManager = new PowerSupplyManager(CurrentValueLabel, VoltageValueLabel);
