@@ -86,5 +86,13 @@ namespace TusurUI.Helpers
             closeShutterButton.Background = new SolidColorBrush(Colors.White);
             openShutterButton.Background = new SolidColorBrush(Colors.White);
         }
+
+        public void ChangeTextSystemStateLabel(string label) { _systemStateLabel.Content = label; }
+        public void ColorizeSystemStateLabel(Color color) { _systemStateLabel.Foreground = new SolidColorBrush(color); }
+        public void CustomizeSystemStateLabel(string label, Color color)
+        {
+            ChangeTextSystemStateLabel(label);
+            ColorizeSystemStateLabel(color);
+        }
     }
 }
