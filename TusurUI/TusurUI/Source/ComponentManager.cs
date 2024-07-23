@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 
-namespace TusurUI
+namespace TusurUI.Source
 {
-    class ComponentManager
+    public static class ComponentManager
     {
-        public ComponentManager() { }
-
         public static void ChangeIndicatorPicture(Image indicator, string imagePath)
         {
             if (indicator == null)
@@ -25,6 +18,13 @@ namespace TusurUI
             image.EndInit();
 
             indicator.Source = image;
+        }
+
+        public static BitmapImage GetIndicatorImage(Image indicator)
+        {
+            if (indicator == null)
+                throw new Exception(nameof(indicator));
+            return indicator.Source as BitmapImage;
         }
     }
 }

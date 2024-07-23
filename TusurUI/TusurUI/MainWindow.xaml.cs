@@ -1,10 +1,9 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.IO.Ports;
-using TusurUI.Source;
-using TusurUI.ExternalSources;
 using System.Windows.Threading;
+using TusurUI.Source;
+using TusurUI.Helpers;
 
 namespace TusurUI
 {
@@ -13,7 +12,12 @@ namespace TusurUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly PowerSupplyTimerManager _psTimerManager;
+        private readonly PowerSupplyTimerManager _powerSupplyTimerManager;
+        private readonly ComPortManager _powerSupplyComPortManager;
+        private readonly ComPortManager _stepMotorComPortManager;
+        private readonly PowerSupplyManager _powerSupplyManager;
+        private readonly StepMotorManager _stepMotorManager;
+        private readonly UIHelper _uiHelper;
 
         private DispatcherTimer? _comPortUpdateTimer;
 
@@ -21,22 +25,24 @@ namespace TusurUI
         private double currentValue { get; set; }
         private ushort voltageValue = 6;
 
-        private string powerSupplyCOM = "";
-        private string stepMotorCOM = "";
-
         public MainWindow()
         {
             InitializeComponent();
-            InitializeComPortUpdateTimer();
-            PopulateComPortComboBoxes();
 
-            _psTimerManager = new PowerSupplyTimerManager(TimerTextBox);
+            _uiHelper = new UIHelper(Vaporizer, SystemStateLabel, VaporizerButtonBase, VaporizerButtonInside, Indicator, CurrentValueLabel, VoltageValueLabel);
+            _powerSupplyTimerManager = new PowerSupplyTimerManager(TimerTextBox);
+            _powerSupplyComPortManager = new ComPortManager(PowerSupplyComPortComboBox);
+            _stepMotorComPortManager = new ComPortManager(ShutterComPortComboBox);
+            _powerSupplyManager = new PowerSupplyManager(CurrentValueLabel, VoltageValueLabel);
+            _stepMotorManager = new StepMotorManager(_uiHelper);
+
+            InitializeComPortUpdateTimer();
 
             // If shutter opened when program started - change icon.
-            if (IsShutterOpened())
-                SetShutterImageToOpened();
+            if (_stepMotorManager.IsShutterOpened())
+                _uiHelper.SetShutterImageToOpened();
             else
-                SetShutterImageToClosed();
+                _uiHelper.SetShutterImageToClosed();
         }
 
         private void InitializeComPortUpdateTimer()
@@ -47,28 +53,10 @@ namespace TusurUI
             _comPortUpdateTimer.Start();
         }
 
-        private void ComPortUpdateTimer_Tick(object? sender, EventArgs e) { PopulateComPortComboBoxes(); }
-
-        private void PopulateComPortComboBoxes()
+        private void ComPortUpdateTimer_Tick(object? sender, EventArgs e)
         {
-            string[] ports = SerialPort.GetPortNames();
-            PowerSupplyComPortComboBox.ItemsSource = ports;
-            ShutterComPortComboBox.ItemsSource = ports;
-
-            if (ports.Length > 0)
-            {
-                if (!PowerSupplyComPortComboBox.Items.Contains(PowerSupplyComPortComboBox.SelectedItem))
-                    PowerSupplyComPortComboBox.SelectedIndex = 0;
-                if (!ShutterComPortComboBox.Items.Contains(ShutterComPortComboBox.SelectedItem))
-                    ShutterComPortComboBox.SelectedIndex = 0;
-                PowerSupplyComPortComboBox.IsEnabled = true;
-                ShutterComPortComboBox.IsEnabled = true;
-            }
-            else
-            {
-                PowerSupplyComPortComboBox.IsEnabled = false;
-                ShutterComPortComboBox.IsEnabled = false;
-            }
+            _powerSupplyComPortManager.PopulateComPortComboBox();
+            _stepMotorComPortManager.PopulateComPortComboBox();
         }
 
         private void TimerTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -79,7 +67,7 @@ namespace TusurUI
                 {
                     textBox.ClearValue(Border.BorderBrushProperty);
                     textBox.ClearValue(Border.BorderThicknessProperty);
-                    StartButtonActivate();
+                    StartButton.IsEnabled = true;
                     textBox.ToolTip = "Введите значение в минутах";
                 }
                 else
@@ -93,20 +81,14 @@ namespace TusurUI
 
         private void TimerTextBox_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
         {
-            e.Handled = !_psTimerManager.IsValidTimerInput(e.Text);
+            e.Handled = !_powerSupplyTimerManager.IsValidTimerInput(e.Text);
         }
-
-        private void StartButtonActivate() { StartButton.IsEnabled = true; }
-        private void StartButtonDeactivate() { StartButton.IsEnabled = false; }
 
         private void StartCountdown()
         {
             try
             {
-                if (_psTimerManager != null)
-                    _psTimerManager.StartCountdown(TimerTextBox);
-                else
-                    throw new Exception("Internal error: TimerManager is uninitialized");
+                _powerSupplyTimerManager.StartCountdown();
             }
             catch (ArgumentException ex)
             {
@@ -114,27 +96,30 @@ namespace TusurUI
             }
         }
 
-        private bool CheckPowerSupplyComPort()
+        private bool AreComPortsValid()
         {
-            if (PowerSupplyComPortComboBox.SelectedItem == null)
+            try
             {
-                ShowError("Пожалуйста, выберите COM-порт для блока питания.");
+                _powerSupplyComPortManager.CheckComPort();
+            }
+            catch (ArgumentException)
+            {
+                ShowError("Сначала выберите COM-порт для блока питания.");
                 return false;
             }
-            return true;
-        }
 
-        private bool CheckShutterComPort()
-        {
-            if (ShutterComPortComboBox.SelectedItem == null)
+            try
             {
-                ShowError("Пожалуйста, выберите COM-порт для заслонки.");
+                _stepMotorComPortManager.CheckComPort();
+            }
+            catch (ArgumentException)
+            {
+                ShowError("Сначала выберите COM-порт для шагового двигателя.");
                 return false;
             }
+
             return true;
         }
-
-        private bool CheckComPorts() { return (!CheckPowerSupplyComPort() || !CheckShutterComPort()); }
 
 
         protected override void OnClosed(EventArgs e)
@@ -161,261 +146,124 @@ namespace TusurUI
 
         private void ConnectToPowerSupply()
         {
-            if (!CheckComPorts())
-                return;
-
-            try
+            ExecuteWithErrorHandling(() =>
             {
-                if (IsPowerSupplyCOMportNull())
+                if (!_powerSupplyComPortManager.CheckComPort())
                     return;
-                PowerSupply.Connect(powerSupplyCOM);
-            }
-            catch (Exception ex)
-            {
-                ShowError(ex.Message);
-                UncheckVaporizerButton();
-            }
+
+                string comPort = _powerSupplyComPortManager.GetComPortName();
+                _powerSupplyManager.ConnectToPowerSupply(comPort);
+            }, UncheckVaporizerButton);
         }
 
         private void TurnOnPowerSupply()
         {
-            try
+            ExecuteWithErrorHandling(() =>
             {
-                if (IsPowerSupplyCOMportNull())
-                    return;
-                PowerSupply.Connect(powerSupplyCOM);
-
-                if (IsPowerSupplyErrorCodeStatusFailed(PowerSupply.TurnOn()))
-                    return;
-            }
-            catch (Exception ex)
-            {
-                ShowError(ex.Message);
-                UncheckVaporizerButton();
-            }
+                string comPort = _powerSupplyComPortManager.GetComPortName();
+                _powerSupplyManager.TurnOnPowerSupply(comPort);
+            }, UncheckVaporizerButton);
         }
 
-        private void ResetZP()
+        private void Reset()
         {
-            try
+            ExecuteWithErrorHandling(() =>
             {
-                if (IsPowerSupplyCOMportNull())
-                    return;
-                PowerSupply.Connect(powerSupplyCOM);
-
-                if (IsPowerSupplyErrorCodeStatusFailed(PowerSupply.ResetZP()))
-                    return;
-            }
-            catch (Exception ex)
-            {
-                ShowError(ex.Message);
-                UncheckVaporizerButton();
-            }
+                string comPort = _powerSupplyComPortManager.GetComPortName();
+                _powerSupplyManager.Reset(comPort);
+            }, UncheckVaporizerButton);
         }
 
         private void ApplyVoltageOnPowerSupply()
         {
-            try
+            ExecuteWithErrorHandling(() =>
             {
-                if (IsPowerSupplyErrorCodeStatusFailed(PowerSupply.SetCurrentVoltage((ushort)currentValue, voltageValue)))
-                    return;
-            }
-            catch (Exception ex)
+                _powerSupplyManager.ApplyVoltageOnPowerSupply(currentValue, voltageValue);
+            }, () =>
             {
-                ShowError(ex.Message);
                 TurnOffPowerSupply();
                 UncheckVaporizerButton();
-            }
+            });
         }
 
         private void ReadCurrentVoltageAndChangeTextBox()
         {
-            try
+            ExecuteWithErrorHandling(() =>
             {
-                int current = PowerSupply.ReadCurrent();
-                if (current == -1)
-                {
-                    ShowWarning(PowerSupply.GetErrorMessage(current));
-                    return;
-                }
-
-                CurrentValueLabel.Content = current.ToString() + " A";
-
-                int voltage = PowerSupply.ReadVoltage();
-                if (voltage == -2)
-                {
-                    ShowWarning(PowerSupply.GetErrorMessage(voltage));
-                    return;
-                }
-
-                VoltageValueLabel.Content = voltage.ToString() + " В";
-            }
-            catch (Exception ex)
-            {
-                ShowError(ex.Message);
-            }
+                _powerSupplyManager.ReadCurrentVoltageAndChangeTextBox();
+            });
         }
 
         private void TurnOffPowerSupply()
         {
-            try
+            ExecuteWithErrorHandling(() =>
             {
-                if (IsPowerSupplyErrorCodeStatusFailed(PowerSupply.TurnOff()))
-                    return;
-            }
-            catch (Exception ex)
-            {
-                ShowError(ex.Message);
-                UncheckVaporizerButton();
-            }
+                string comPort = _powerSupplyComPortManager.GetComPortName();
+                _powerSupplyManager.TurnOffPowerSupply(comPort);
+            }, UncheckVaporizerButton);
         }
 
         private void OpenShutter()
         {
-            try
+            ExecuteWithErrorHandling(() =>
             {
-                if (IsStepMotorCOMportNull())
-                    return;
-                StepMotor.Connect(stepMotorCOM);
-
-                if (IsStepMotorErrorCodeStatusFailed(StepMotor.Forward()))
-                    return;
-
+                string comPort = _stepMotorComPortManager.GetComPortName();
+                _stepMotorManager.OpenShutter(comPort);
                 SetShutterImageToOpened();
                 ColorizeOpenShutterButton();
-            }
-            catch (Exception ex)
+            }, () =>
             {
-                ShowError(ex.Message);
                 SetShutterImageToClosed();
-            }
+                ColorizeCloseShutterButton();
+            });
         }
 
         private void CloseShutter()
         {
-            try
+            ExecuteWithErrorHandling(() =>
             {
-                if (IsStepMotorCOMportNull())
-                    return;
-                StepMotor.Connect(stepMotorCOM);
-
-                if (IsStepMotorErrorCodeStatusFailed(StepMotor.Reverse()))
-                    return;
-
+                string comPort = _stepMotorComPortManager.GetComPortName();
+                _stepMotorManager.CloseShutter(comPort);
                 SetShutterImageToClosed();
                 ColorizeCloseShutterButton();
-            }
-            catch (Exception ex)
-            {
-                ShowError(ex.Message);
-                SetShutterImageToClosed();
-            }
+            }, SetShutterImageToClosed);
         }
 
         private void StopStepMotor()
         {
-            try
+            ExecuteWithErrorHandling(() =>
             {
-                if (IsStepMotorCOMportNull())
-                    return;
-                StepMotor.Connect(stepMotorCOM);
-
-                if (IsStepMotorErrorCodeStatusFailed(StepMotor.Stop()))
-                    return;
-
+                string comPort = _stepMotorComPortManager.GetComPortName();
+                _stepMotorManager.StopStepMotor(comPort);
                 ColorizeStopStepMotorButton();
-            }
-            catch (Exception ex)
-            {
-                ShowError(ex.Message);
-            }
+            });
         }
 
         private void ShowWarning(string message, string title = "Предупреждение") { MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Warning); }
 
         private void ShowError(string message, string title = "Ошибка") { MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error); }
 
-        private bool IsShutterOpened() { return StepMotor.IsForwardButtonPressed(); }
-        private bool IsShutterClosed() { return StepMotor.IsReverseButtonPressed(); }
-
-        private bool IsPowerSupplyErrorCodeStatusFailed(int errorCode)
-        {
-            if (errorCode > 0)
-            {
-                ShowWarning(PowerSupply.GetErrorMessage(errorCode));
-                UncheckVaporizerButton();
-            }
-            return errorCode == 0;
-        }
-
-        private bool IsStepMotorErrorCodeStatusFailed(int errorCode)
-        {
-            if (errorCode > 0)
-            {
-                ShowWarning(StepMotor.GetErrorMessage(errorCode));
-                SetShutterImageToClosed();
-            }
-            return errorCode == 0;
-        }
-
-        private bool IsPowerSupplyCOMportNull()
-        {
-            string? port = PowerSupplyComPortComboBox.SelectedItem.ToString();
-            if (port == null)
-            {
-                ShowError($"Возникла ошибка при выборе COM-порта для управления блоком питания. Выбранный COM-порт: <{PowerSupplyComPortComboBox.SelectedItem}>");
-                UncheckVaporizerButton();
-                return true;
-            }
-            powerSupplyCOM = port;
-            return false;
-        }
-
-        private bool IsStepMotorCOMportNull()
-        {
-            string? port = ShutterComPortComboBox.SelectedItem.ToString();
-            if (port == null)
-            {
-                ShowError($"Возникла ошибка при выборе COM-порта для управления заслонкой. Выбранный COM-порт: <{ShutterComPortComboBox.SelectedItem}>");
-                SetShutterImageToClosed();
-                return true;
-            }
-            stepMotorCOM = port;
-            return false;
-        }
-
         private void CheckVaporizerButton()
         {
-            // Changing color of the switch and moving button to the right
-            VaporizerButtonBase.Background = new SolidColorBrush(Colors.Green);
-            DockPanel.SetDock(VaporizerButtonInside, Dock.Right);
-            ComponentManager.ChangeIndicatorPicture(Indicator, "Images/индикатор вкл.jpg");
+            _uiHelper.CheckVaporizerButton();
             isVaporizerWorks = true;
         }
 
         private void UncheckVaporizerButton()
         {
-            SystemStateLabel.Content = "Система не работает";
-            SystemStateLabel.Foreground = new SolidColorBrush(Colors.Red);
-            VaporizerButtonBase.Background = new SolidColorBrush(Colors.White);
-            DockPanel.SetDock(VaporizerButtonInside, Dock.Left);
-            ComponentManager.ChangeIndicatorPicture(Indicator, "Images/индикатор откл.jpg");
+            _uiHelper.UncheckVaporizerButton();
             isVaporizerWorks = false;
-
-            CurrentValueLabel.Content = "0 A";
-            VoltageValueLabel.Content = "0 В";
-
-            _psTimerManager.ResetTimer();
+            _powerSupplyTimerManager.ResetTimer();
         }
 
-        private void SetShutterImageToClosed() { ComponentManager.ChangeIndicatorPicture(Vaporizer, "Images/заслонка закр фото.png"); }
+        private void SetShutterImageToClosed() { _uiHelper.SetShutterImageToClosed(); ; }
 
-        private void SetShutterImageToOpened() { ComponentManager.ChangeIndicatorPicture(Vaporizer, "Images/заслонка откр.png"); }
+        private void SetShutterImageToOpened() { _uiHelper.SetShutterImageToOpened(); }
 
         private void VaporizerButtonBase_Checked(object sender, RoutedEventArgs e)
         {
             CheckVaporizerButton();
-            //ConnectToPowerSupply();
+            ConnectToPowerSupply();
         }
 
         private void VaporizerButtonBase_Unchecked(object sender, RoutedEventArgs e)
@@ -456,8 +304,8 @@ namespace TusurUI
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            //if (!CheckComPorts())
-            //    return;
+            if (!AreComPortsValid())
+                return;
 
             if (isVaporizerWorks)
             {
@@ -466,12 +314,13 @@ namespace TusurUI
 
                 try
                 {
-                    //TurnOnPowerSupply();
-                    //ApplyVoltageOnPowerSupply();
-                    //ReadCurrentVoltageAndChangeTextBox();
-                    //ResetZP();
+                    TurnOnPowerSupply();
+                    ApplyVoltageOnPowerSupply();
+                    ReadCurrentVoltageAndChangeTextBox();
+                    Reset();
 
                     StartCountdown();
+                    StartButton.IsEnabled = false;
                 }
                 catch (Exception ex)
                 {
@@ -482,26 +331,9 @@ namespace TusurUI
                 ShowWarning("Сперва нужно включить управление испарителем");
         }
 
-        private void ColorizeOpenShutterButton()
-        {
-            StopStepMotorButton.Background = new SolidColorBrush(Colors.White);
-            CloseShutterButton.Background = new SolidColorBrush(Colors.White);
-            OpenShutterButton.Background = new SolidColorBrush(Colors.Green);
-        }
-
-        private void ColorizeCloseShutterButton()
-        {
-            StopStepMotorButton.Background = new SolidColorBrush(Colors.White);
-            CloseShutterButton.Background = new SolidColorBrush(Colors.Red);
-            OpenShutterButton.Background = new SolidColorBrush(Colors.White);
-        }
-
-        private void ColorizeStopStepMotorButton()
-        {
-            StopStepMotorButton.Background = new SolidColorBrush(Colors.Gray);
-            CloseShutterButton.Background = new SolidColorBrush(Colors.White);
-            OpenShutterButton.Background = new SolidColorBrush(Colors.White);
-        }
+        private void ColorizeOpenShutterButton() { _uiHelper.ColorizeOpenShutterButton(OpenShutterButton, CloseShutterButton, StopStepMotorButton); }
+        private void ColorizeCloseShutterButton() { _uiHelper.ColorizeCloseShutterButton(OpenShutterButton, CloseShutterButton, StopStepMotorButton); }
+        private void ColorizeStopStepMotorButton() { _uiHelper.ColorizeStopStepMotorButton(OpenShutterButton, CloseShutterButton, StopStepMotorButton); }
 
         private void SetDisabledOpenShutterButton()
         {
@@ -515,7 +347,7 @@ namespace TusurUI
             CloseShutterButton.IsEnabled = false;
         }
 
-        private void SetEnablesOpenCloseShutterButtons()
+        private void SetEnableOpenCloseShutterButtons()
         {
             OpenShutterButton.IsEnabled = true;
             CloseShutterButton.IsEnabled = true;
@@ -535,7 +367,7 @@ namespace TusurUI
 
         private void StopStepMotorButton_Click(object sender, RoutedEventArgs e)
         {
-            SetEnablesOpenCloseShutterButtons();
+            SetEnableOpenCloseShutterButtons();
             StopStepMotor();
         }
 
@@ -543,6 +375,19 @@ namespace TusurUI
         {
             TurnOffPowerSupply();
             StopStepMotor();
+        }
+
+        private void ExecuteWithErrorHandling(Action action, Action? onError = null)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception ex)
+            {
+                ShowError(ex.Message);
+                onError?.Invoke();
+            }
         }
     }
 }

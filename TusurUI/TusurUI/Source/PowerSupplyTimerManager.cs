@@ -20,24 +20,24 @@ public class PowerSupplyTimerManager : IPowerSupplyTimerManager
         _timerTextBox = timerTextBox ?? throw new ArgumentNullException(nameof(timerTextBox));
     }
 
-    public void StartCountdown(TextBox timerTextBox)
+    public void StartCountdown()
     {
-        if (string.IsNullOrWhiteSpace(timerTextBox.Text))
+        if (string.IsNullOrWhiteSpace(_timerTextBox.Text))
         {
             // Direct countdown if timer text box is empty
             _remainingSeconds = 0;
             _isDirectCountdown = true;
         }
-        else if (int.TryParse(timerTextBox.Text, out int minutes) && minutes > 0)
+        else if (int.TryParse(_timerTextBox.Text, out int minutes) && minutes > 0)
         {
             // Reverse countdown if timer text box isn't empty
             _remainingSeconds = minutes * 60;
-            timerTextBox.IsReadOnly = true;
+            _timerTextBox.IsReadOnly = true;
             _isDirectCountdown = false;
         }
         else
         {
-            throw new ArgumentException("Введите корректное значение в минутах.");
+            throw new ArgumentNullException("Введите корректное значение в минутах.");
         }
 
         _timerCountdown = new DispatcherTimer();

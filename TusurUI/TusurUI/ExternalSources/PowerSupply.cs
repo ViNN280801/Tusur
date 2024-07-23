@@ -34,7 +34,7 @@ namespace TusurUI.Source
         public static int ReadCurrent() { return PowerSupply_ReadCurrent(); }
 
         public static int ReadVoltage() {  return PowerSupply_ReadVoltage(); }
-        public static int ResetZP() { return PowerSupply_ResetZP(); }
+        public static int Reset() { return PowerSupply_ResetZP(); }
 
         private static string GetErrorMessageEN(int errorCode)
         {
