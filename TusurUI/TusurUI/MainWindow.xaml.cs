@@ -20,7 +20,10 @@ namespace TusurUI
         private readonly UIHelper _uiHelper;
 
         private DispatcherTimer? _comPortUpdateTimer;
+        private DispatcherTimer? _currentVoltageUpdateTimer;
 
+        private const int UpdateComPortsIntervalMilliseconds = 5000;
+        private const int UpdateCurrentVoltageIntervalMilliseconds = 100;
         private bool isVaporizerWorks = false;
         private double currentValue { get; set; }
         private ushort voltageValue = 6;
@@ -37,6 +40,7 @@ namespace TusurUI
             _stepMotorManager = new StepMotorManager(_uiHelper);
 
             InitializeComPortUpdateTimer();
+            InitializeUpdateCurrentVoltageTimer();
 
             // If shutter opened when program started - change icon.
             if (_stepMotorManager.IsShutterOpened())
@@ -48,7 +52,7 @@ namespace TusurUI
         private void InitializeComPortUpdateTimer()
         {
             _comPortUpdateTimer = new DispatcherTimer();
-            _comPortUpdateTimer.Interval = TimeSpan.FromSeconds(5);
+            _comPortUpdateTimer.Interval = TimeSpan.FromMilliseconds(UpdateComPortsIntervalMilliseconds);
             _comPortUpdateTimer.Tick += ComPortUpdateTimer_Tick;
             _comPortUpdateTimer.Start();
         }
@@ -57,6 +61,24 @@ namespace TusurUI
         {
             _powerSupplyComPortManager.PopulateComPortComboBox();
             _stepMotorComPortManager.PopulateComPortComboBox();
+        }
+
+        private void InitializeUpdateCurrentVoltageTimer()
+        {
+            _currentVoltageUpdateTimer = new DispatcherTimer();
+            _currentVoltageUpdateTimer.Interval = TimeSpan.FromMilliseconds(UpdateCurrentVoltageIntervalMilliseconds);
+            _currentVoltageUpdateTimer.Tick += CurrentVoltageUpdateTimer_Tick;
+        }
+
+        private void CurrentVoltageUpdateTimer_Tick(object? sender, EventArgs e)
+        {
+            _powerSupplyManager.ReadCurrentVoltageAndChangeTextBox();
+        }
+
+        private void StopTimers()
+        {
+            _comPortUpdateTimer?.Stop();
+            _currentVoltageUpdateTimer?.Stop();
         }
 
         private void TimerTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -121,11 +143,10 @@ namespace TusurUI
             return true;
         }
 
-
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
-            _comPortUpdateTimer?.Stop();
+            StopTimers();
         }
 
         private bool IsValidInput(string text)
@@ -153,6 +174,7 @@ namespace TusurUI
 
                 string comPort = _powerSupplyComPortManager.GetComPortName();
                 _powerSupplyManager.ConnectToPowerSupply(comPort);
+                _currentVoltageUpdateTimer?.Start();
             }, UncheckVaporizerButton);
         }
 
@@ -162,6 +184,7 @@ namespace TusurUI
             {
                 string comPort = _powerSupplyComPortManager.GetComPortName();
                 _powerSupplyManager.TurnOnPowerSupply(comPort);
+                _currentVoltageUpdateTimer?.Start();
             }, UncheckVaporizerButton);
         }
 
@@ -200,6 +223,7 @@ namespace TusurUI
             {
                 string comPort = _powerSupplyComPortManager.GetComPortName();
                 _powerSupplyManager.TurnOffPowerSupply(comPort);
+                _currentVoltageUpdateTimer?.Stop();
             }, UncheckVaporizerButton);
         }
 
@@ -254,6 +278,7 @@ namespace TusurUI
             _uiHelper.UncheckVaporizerButton();
             isVaporizerWorks = false;
             _powerSupplyTimerManager.ResetTimer();
+            _currentVoltageUpdateTimer?.Stop();
         }
 
         private void SetShutterImageToClosed() { _uiHelper.SetShutterImageToClosed(); ; }
