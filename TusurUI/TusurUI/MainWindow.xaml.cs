@@ -13,7 +13,7 @@ namespace TusurUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly PowerSuplyTimerManager _psTimerManager;
+        private readonly PowerSupplyTimerManager _psTimerManager;
 
         private DispatcherTimer? _comPortUpdateTimer;
 
@@ -30,7 +30,7 @@ namespace TusurUI
             InitializeComPortUpdateTimer();
             PopulateComPortComboBoxes();
 
-            _psTimerManager = new PowerSuplyTimerManager(TimerTextBox);
+            _psTimerManager = new PowerSupplyTimerManager(TimerTextBox);
 
             // If shutter opened when program started - change icon.
             if (IsShutterOpened())
