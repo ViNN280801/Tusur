@@ -5,7 +5,6 @@ using System.IO.Ports;
 using TusurUI.Source;
 using TusurUI.ExternalSources;
 using System.Windows.Threading;
-using System.Diagnostics.SymbolStore;
 
 namespace TusurUI
 {
@@ -14,11 +13,9 @@ namespace TusurUI
     /// </summary>
     public partial class MainWindow : Window
     {
+        private readonly TimerManager _timerManager;
+
         private DispatcherTimer? _comPortUpdateTimer;
-        private DispatcherTimer? _statusCheckTimer;
-        private DispatcherTimer? _timerCountdown; // Timer for the power supply (power supply turned off when timer is 0)
-        private int _remainingSeconds;
-        private bool _isDirectCountdown = false;
 
         private bool isVaporizerWorks = false;
         private double currentValue { get; set; }
@@ -32,6 +29,8 @@ namespace TusurUI
             InitializeComponent();
             InitializeComPortUpdateTimer();
             PopulateComPortComboBoxes();
+
+            _timerManager = new TimerManager(TimerTextBox);
 
             // If shutter opened when program started - change icon.
             if (IsShutterOpened())
@@ -80,14 +79,13 @@ namespace TusurUI
                 {
                     textBox.ClearValue(Border.BorderBrushProperty);
                     textBox.ClearValue(Border.BorderThicknessProperty);
-                    StartButton.IsEnabled = true;
+                    StartButtonActivate();
                     textBox.ToolTip = "Введите значение в минутах";
                 }
                 else
                 {
                     textBox.BorderBrush = new SolidColorBrush(Colors.Red);
                     textBox.BorderThickness = new Thickness(1);
-                    StartButton.IsEnabled = false;
                     textBox.ToolTip = "Неверное значение. Допустимый диапазон: > 0 минут";
                 }
             }
@@ -95,66 +93,24 @@ namespace TusurUI
 
         private void TimerTextBox_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
         {
-            e.Handled = !IsValidTimerInput(e.Text);
+            e.Handled = !_timerManager.IsValidTimerInput(e.Text);
         }
 
-        private bool IsValidTimerInput(string text)
-        {
-            return text.All(char.IsDigit);
-        }
+        private void StartButtonActivate() { StartButton.IsEnabled = true; }
+        private void StartButtonDeactivate() { StartButton.IsEnabled = false; }
 
         private void StartCountdown()
         {
-            if (string.IsNullOrWhiteSpace(TimerTextBox.Text))
+            try
             {
-                // Direct countdown if timer text box is empty
-                _remainingSeconds = 0;
-                _isDirectCountdown = true;
-            }
-            else if (int.TryParse(TimerTextBox.Text, out int minutes) && minutes > 0)
-            {
-                // Reverse countdown if timer text box isn't empty
-                _remainingSeconds = minutes * 60;
-                TimerTextBox.IsReadOnly = true;
-                _isDirectCountdown = false;
-            }
-            else
-            {
-                ShowError("Введите корректное значение в минутах.");
-                return;
-            }
-
-            _timerCountdown = new DispatcherTimer();
-            _timerCountdown.Interval = TimeSpan.FromSeconds(1);
-            _timerCountdown.Tick += TimerCountdown_Tick;
-            _timerCountdown.Start();
-        }
-
-        private void ResetTimer()
-        {
-            _timerCountdown?.Stop();
-            TimerTextBox.IsReadOnly = false;
-            TimerTextBox.Text = string.Empty;
-        }
-
-        private void TimerCountdown_Tick(object? sender, EventArgs e)
-        {
-            if (_isDirectCountdown)
-            {
-                _remainingSeconds++;
-                TimerTextBox.Text = $"{_remainingSeconds / 60}:{_remainingSeconds % 60:D2}";
-            }
-            else
-            {
-                if (_remainingSeconds > 0)
-                {
-                    _remainingSeconds--;
-                    TimerTextBox.Text = $"{_remainingSeconds / 60}:{_remainingSeconds % 60:D2}";
-                }
+                if (_timerManager != null)
+                    _timerManager.StartCountdown(TimerTextBox);
                 else
-                {
-                    ResetTimer();
-                }
+                    throw new Exception("Internal error: TimerManager is uninitialized");
+            }
+            catch (ArgumentException ex)
+            {
+                ShowError(ex.Message);
             }
         }
 
@@ -449,7 +405,7 @@ namespace TusurUI
             CurrentValueLabel.Content = "0 A";
             VoltageValueLabel.Content = "0 В";
 
-            ResetTimer();
+            _timerManager.ResetTimer();
         }
 
         private void SetShutterImageToClosed() { ComponentManager.ChangeIndicatorPicture(Vaporizer, "Images/заслонка закр фото.png"); }
@@ -459,7 +415,7 @@ namespace TusurUI
         private void VaporizerButtonBase_Checked(object sender, RoutedEventArgs e)
         {
             CheckVaporizerButton();
-            ConnectToPowerSupply();
+            //ConnectToPowerSupply();
         }
 
         private void VaporizerButtonBase_Unchecked(object sender, RoutedEventArgs e)
@@ -500,8 +456,8 @@ namespace TusurUI
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!CheckComPorts())
-                return;
+            //if (!CheckComPorts())
+            //    return;
 
             if (isVaporizerWorks)
             {
@@ -510,10 +466,10 @@ namespace TusurUI
 
                 try
                 {
-                    TurnOnPowerSupply();
-                    ApplyVoltageOnPowerSupply();
-                    ReadCurrentVoltageAndChangeTextBox();
-                    ResetZP();
+                    //TurnOnPowerSupply();
+                    //ApplyVoltageOnPowerSupply();
+                    //ReadCurrentVoltageAndChangeTextBox();
+                    //ResetZP();
 
                     StartCountdown();
                 }
