@@ -212,6 +212,29 @@ namespace TusurUI
             }
         }
 
+        private bool CheckPowerSupplyComPort()
+        {
+            if (PowerSupplyComPortComboBox.SelectedItem == null)
+            {
+                ShowError("Пожалуйста, выберите COM-порт для блока питания.");
+                return false;
+            }
+            return true;
+        }
+
+        private bool CheckShutterComPort()
+        {
+            if (ShutterComPortComboBox.SelectedItem == null)
+            {
+                ShowError("Пожалуйста, выберите COM-порт для заслонки.");
+                return false;
+            }
+            return true;
+        }
+
+        private bool CheckComPorts() { return (!CheckPowerSupplyComPort() || !CheckShutterComPort()); }
+
+
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
@@ -236,6 +259,9 @@ namespace TusurUI
 
         private void ConnectToPowerSupply()
         {
+            if (!CheckComPorts())
+                return;
+
             try
             {
                 if (IsPowerSupplyCOMportNull())
@@ -531,6 +557,9 @@ namespace TusurUI
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!CheckComPorts())
+                return;
+
             if (isVaporizerWorks)
             {
                 SystemStateLabel.Content = "Система работает";
