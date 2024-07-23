@@ -12,6 +12,12 @@ namespace TusurUI
     /// </summary>
     public partial class MainWindow : Window
     {
+        private const int k_InvalidTime = 0;
+        private const int k_MinCurrentValue = 0;
+        private const int k_MaxCurrentValue = 200;
+        private const int k_UpdateComPortsIntervalMilliseconds = 5000;
+        private const int k_UpdateCurrentVoltageIntervalMilliseconds = 100;
+
         private readonly PowerSupplyTimerManager _powerSupplyTimerManager;
         private readonly ComPortManager _powerSupplyComPortManager;
         private readonly ComPortManager _stepMotorComPortManager;
@@ -22,8 +28,6 @@ namespace TusurUI
         private DispatcherTimer? _comPortUpdateTimer;
         private DispatcherTimer? _currentVoltageUpdateTimer;
 
-        private const int UpdateComPortsIntervalMilliseconds = 5000;
-        private const int UpdateCurrentVoltageIntervalMilliseconds = 100;
         private bool isVaporizerWorks = false;
         private double currentValue { get; set; }
         private ushort voltageValue = 6;
@@ -52,7 +56,7 @@ namespace TusurUI
         private void InitializeComPortUpdateTimer()
         {
             _comPortUpdateTimer = new DispatcherTimer();
-            _comPortUpdateTimer.Interval = TimeSpan.FromMilliseconds(UpdateComPortsIntervalMilliseconds);
+            _comPortUpdateTimer.Interval = TimeSpan.FromMilliseconds(k_UpdateComPortsIntervalMilliseconds);
             _comPortUpdateTimer.Tick += ComPortUpdateTimer_Tick;
             _comPortUpdateTimer.Start();
         }
@@ -66,7 +70,7 @@ namespace TusurUI
         private void InitializeUpdateCurrentVoltageTimer()
         {
             _currentVoltageUpdateTimer = new DispatcherTimer();
-            _currentVoltageUpdateTimer.Interval = TimeSpan.FromMilliseconds(UpdateCurrentVoltageIntervalMilliseconds);
+            _currentVoltageUpdateTimer.Interval = TimeSpan.FromMilliseconds(k_UpdateCurrentVoltageIntervalMilliseconds);
             _currentVoltageUpdateTimer.Tick += CurrentVoltageUpdateTimer_Tick;
         }
 
@@ -85,7 +89,7 @@ namespace TusurUI
         {
             if (sender is TextBox textBox)
             {
-                if (int.TryParse(textBox.Text, out int minutes) && minutes > 0)
+                if (int.TryParse(textBox.Text, out int minutes) && minutes > k_InvalidTime)
                 {
                     textBox.ClearValue(Border.BorderBrushProperty);
                     textBox.ClearValue(Border.BorderThicknessProperty);
@@ -96,7 +100,7 @@ namespace TusurUI
                 {
                     textBox.BorderBrush = new SolidColorBrush(Colors.Red);
                     textBox.BorderThickness = new Thickness(1);
-                    textBox.ToolTip = "Неверное значение. Допустимый диапазон: > 0 минут";
+                    textBox.ToolTip = $"Неверное значение. Допустимый диапазон: > {k_InvalidTime} минут";
                 }
             }
         }
@@ -305,20 +309,20 @@ namespace TusurUI
                 if (double.TryParse(newText,
                     System.Globalization.NumberStyles.Any,
                     System.Globalization.CultureInfo.InvariantCulture,
-                    out double value) && (value >= 0 && value <= 200))
+                    out double value) && (value >= k_MinCurrentValue && value <= k_MaxCurrentValue))
                 {
                     textBox.ClearValue(Border.BorderBrushProperty);
                     textBox.ClearValue(Border.BorderThicknessProperty);
                     StartButton.IsEnabled = true;
                     currentValue = value;
-                    textBox.ToolTip = "Введите значение от 0 до 200";
+                    textBox.ToolTip = $"Введите значение от {k_MinCurrentValue} до {k_MaxCurrentValue}А";
                 }
                 else
                 {
                     textBox.BorderBrush = new SolidColorBrush(Colors.Red);
                     textBox.BorderThickness = new Thickness(1);
                     StartButton.IsEnabled = false;
-                    textBox.ToolTip = "Неверное значение. Допустимый диапазон: 0-200 А";
+                    textBox.ToolTip = $"Неверное значение. Допустимый диапазон: {k_MinCurrentValue}-{k_MaxCurrentValue}А";
                 }
             }
         }
