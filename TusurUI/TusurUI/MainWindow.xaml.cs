@@ -357,26 +357,23 @@ namespace TusurUI
         /// Main functions
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            // Check the COM-ports.
-            //if (!AreComPortsValid())
-            //    return;
+            if (!AreComPortsValid())
+                return;
 
-            // Check if vaporizer works or not.
             if (!isVaporizerWorks)
             {
                 ShowWarning("Отсутствует связь с блоком питания. Проверьте питание на БП и подключение кабеля RS-432");
                 return;
             }
 
-            // Changing the system state label.
             _uiHelper.CustomizeSystemStateLabel("Система работает", Colors.Green);
 
             try
             {
-                //TurnOnPowerSupply();
-                //ApplyVoltageOnPowerSupply();
-                //ReadCurrentVoltageAndChangeTextBox();
-                //Reset();
+                TurnOnPowerSupply();
+                ApplyVoltageOnPowerSupply();
+                ReadCurrentVoltageAndChangeTextBox();
+                Reset();
 
                 StartCountdown();
                 StartButton.IsEnabled = false;
@@ -390,13 +387,13 @@ namespace TusurUI
         private void VaporizerButtonBase_Checked(object sender, RoutedEventArgs e)
         {
             CheckVaporizerButton();
-            //ConnectToPowerSupply();
+            ConnectToPowerSupply();
         }
 
         private void VaporizerButtonBase_Unchecked(object sender, RoutedEventArgs e)
         {
             UncheckVaporizerButton();
-            //TurnOffPowerSupply();
+            TurnOffPowerSupply();
         }
     }
 }
