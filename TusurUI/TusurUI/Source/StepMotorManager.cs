@@ -15,6 +15,8 @@ namespace TusurUI.Source
     {
         private readonly UIHelper _uiHelper;
 
+        private bool _IsStepMotorConnected = false;
+
         public StepMotorManager(UIHelper uiHelper)
         {
             _uiHelper = uiHelper ?? throw new ArgumentNullException(nameof(uiHelper));
@@ -22,23 +24,25 @@ namespace TusurUI.Source
 
         public void OpenShutter(string comPort)
         {
-            StepMotor.Connect(comPort);
+            Connect(comPort);
             ExecuteCommand(StepMotor.Forward);
             _uiHelper.SetShutterImageToOpened();
         }
 
         public void CloseShutter(string comPort)
         {
-            StepMotor.Connect(comPort);
+            Connect(comPort);
             ExecuteCommand(StepMotor.Reverse);
             _uiHelper.SetShutterImageToClosed();
         }
 
         public void StopStepMotor(string comPort)
         {
-            StepMotor.Connect(comPort);
+            Connect(comPort);
             ExecuteCommand(StepMotor.Stop);
         }
+
+        public bool IsConnected() { return _IsStepMotorConnected; }
 
         public bool IsShutterOpened()
         {
@@ -54,7 +58,10 @@ namespace TusurUI.Source
         {
             string? err = GetErrorMessage(command());
             if (err != null)
+            {
+                _IsStepMotorConnected = false;
                 throw new Exception(err);
+            }
         }
 
         private string? GetErrorMessage(int errorCode)
@@ -62,6 +69,12 @@ namespace TusurUI.Source
             if (errorCode > 0)
                 return StepMotor.GetErrorMessage(errorCode);
             return null;
+        }
+
+        private void Connect(string comPort)
+        {
+            StepMotor.Connect(comPort);
+            _IsStepMotorConnected = true;
         }
     }
 }

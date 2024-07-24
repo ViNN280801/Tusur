@@ -15,7 +15,7 @@
          *
          * This method establishes a connection to the power supply using the given COM port.
          */
-        void ConnectToPowerSupply(string comPort);
+        void Connect(string comPort);
 
         /**
          * @brief Turns on the power supply.

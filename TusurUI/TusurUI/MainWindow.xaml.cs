@@ -26,7 +26,6 @@ namespace TusurUI
         private readonly StepMotorManager _stepMotorManager;
         private readonly UIHelper _uiHelper;
 
-        private bool isVaporizerWorks = false;
         private double currentValue { get; set; }
         private ushort voltageValue = 6;
 
@@ -156,7 +155,7 @@ namespace TusurUI
                     return;
 
                 string comPort = _powerSupplyComPortManager.GetComPortName();
-                _powerSupplyManager.ConnectToPowerSupply(comPort);
+                _powerSupplyManager.Connect(comPort);
                 _currentVoltageUpdateTimerManager.Start();
             }, UncheckVaporizerButton);
         }
@@ -250,16 +249,11 @@ namespace TusurUI
 
         private void ShowError(string message, string title = "Ошибка") { MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error); }
 
-        private void CheckVaporizerButton()
-        {
-            _uiHelper.CheckVaporizerButton();
-            isVaporizerWorks = true;
-        }
+        private void CheckVaporizerButton() { _uiHelper.CheckVaporizerButton(); }
 
         private void UncheckVaporizerButton()
         {
             _uiHelper.UncheckVaporizerButton();
-            isVaporizerWorks = false;
             _powerSupplyTimerManager.ResetTimer();
             _currentVoltageUpdateTimerManager.Stop();
         }
@@ -335,12 +329,6 @@ namespace TusurUI
             StopStepMotor();
         }
 
-        private void Window_Closed(object sender, EventArgs e)
-        {
-            TurnOffPowerSupply();
-            StopStepMotor();
-        }
-
         private void ExecuteWithErrorHandling(Action action, Action? onError = null)
         {
             try
@@ -360,7 +348,7 @@ namespace TusurUI
             if (!AreComPortsValid())
                 return;
 
-            if (!isVaporizerWorks)
+            if (!_powerSupplyManager.IsConnected())
             {
                 ShowWarning("Отсутствует связь с блоком питания. Проверьте питание на БП и подключение кабеля RS-432");
                 return;
@@ -386,14 +374,28 @@ namespace TusurUI
 
         private void VaporizerButtonBase_Checked(object sender, RoutedEventArgs e)
         {
+            if (_powerSupplyManager.IsConnected())
+                return;
+
             CheckVaporizerButton();
             ConnectToPowerSupply();
         }
 
         private void VaporizerButtonBase_Unchecked(object sender, RoutedEventArgs e)
         {
+            if (!_powerSupplyManager.IsConnected())
+                return;
+
             UncheckVaporizerButton();
             TurnOffPowerSupply();
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            if (_powerSupplyManager.IsConnected())
+                TurnOffPowerSupply();
+            if (_stepMotorManager.IsConnected())
+                StopStepMotor();
         }
     }
 }

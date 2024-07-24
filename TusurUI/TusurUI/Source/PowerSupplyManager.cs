@@ -15,23 +15,31 @@ namespace TusurUI.Source
         private readonly Label _currentValueLabel;
         private readonly Label _voltageValueLabel;
 
+        private bool _IsPowerSupplyConnected = false;
+
         public PowerSupplyManager(Label currentValueLabel, Label voltageValueLabel)
         {
             _currentValueLabel = currentValueLabel ?? throw new ArgumentNullException(nameof(currentValueLabel));
             _voltageValueLabel = voltageValueLabel ?? throw new ArgumentNullException(nameof(voltageValueLabel));
         }
 
-        public void ConnectToPowerSupply(string comPort) { PowerSupply.Connect(comPort); }
+        public void Connect(string comPort)
+        {
+            PowerSupply.Connect(comPort);
+            _IsPowerSupplyConnected = true;
+        }
+
+        public bool IsConnected() { return _IsPowerSupplyConnected; }
 
         public void TurnOnPowerSupply(string comPort)
         {
-            ConnectToPowerSupply(comPort);
+            Connect(comPort);
             ExecuteCommand(PowerSupply.TurnOn);
         }
 
         public void Reset(string comPort)
         {
-            ConnectToPowerSupply(comPort);
+            Connect(comPort);
             ExecuteCommand(PowerSupply.Reset);
         }
 
@@ -59,7 +67,7 @@ namespace TusurUI.Source
 
         public void TurnOffPowerSupply(string comPort)
         {
-            ConnectToPowerSupply(comPort);
+            Connect(comPort);
             ExecuteCommand(PowerSupply.TurnOff);
         }
 
@@ -67,7 +75,10 @@ namespace TusurUI.Source
         {
             string? err = GetErrorMessage(command());
             if (err != null)
+            {
+                _IsPowerSupplyConnected = false;
                 throw new Exception(err);
+            }
         }
 
         private string? GetErrorMessage(int errorCode)
