@@ -17,7 +17,6 @@ namespace TusurUI.Source
         public ComPortManager(ComboBox comboBox)
         {
             _comboBox = comboBox ?? throw new ArgumentNullException(nameof(comboBox));
-            PopulateComPortComboBox();
         }
 
         public void PopulateComPortComboBox(ComboBox otherComboBox)

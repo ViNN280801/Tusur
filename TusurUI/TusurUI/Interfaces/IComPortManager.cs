@@ -1,4 +1,6 @@
-﻿namespace TusurUI.Interfaces
+﻿using System.Windows.Controls;
+
+namespace TusurUI.Interfaces
 {
     /**
      * @interface IComPortManager
@@ -15,7 +17,7 @@
          * This method retrieves the list of available COM ports on the system and populates
          * the associated ComboBox with these ports.
          */
-        void PopulateComPortComboBox();
+        void PopulateComPortComboBox(ComboBox otherComboBox);
 
         /**
          * @brief Checks if the selected COM port is valid.
