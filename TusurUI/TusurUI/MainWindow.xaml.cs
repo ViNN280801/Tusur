@@ -42,6 +42,9 @@ namespace TusurUI
             _powerSupplyManager = new PowerSupplyManager(CurrentValueLabel, VoltageValueLabel);
             _stepMotorManager = new StepMotorManager(_uiHelper);
 
+            PowerSupplyComPortComboBox.SelectionChanged += ComboBox_SelectionChanged;
+            ShutterComPortComboBox.SelectionChanged += ComboBox_SelectionChanged;
+
             _comPortUpdateTimerManager.Start();
 
             // If shutter opened when program started - change icon.
@@ -53,8 +56,8 @@ namespace TusurUI
 
         private void UpdateComPorts()
         {
-            _powerSupplyComPortManager.PopulateComPortComboBox();
-            _stepMotorComPortManager.PopulateComPortComboBox();
+            _powerSupplyComPortManager.PopulateComPortComboBox(ShutterComPortComboBox);
+            _stepMotorComPortManager.PopulateComPortComboBox(PowerSupplyComPortComboBox);
         }
 
         private void UpdateCurrentVoltage()
@@ -141,10 +144,10 @@ namespace TusurUI
 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (sender == PowerSupplyComPortComboBox && PowerSupplyComPortComboBox.SelectedItem == ShutterComPortComboBox.SelectedItem)
-                ShutterComPortComboBox.SelectedIndex = k_InvalidComboBoxItem;
-            else if (sender == ShutterComPortComboBox && ShutterComPortComboBox.SelectedItem == PowerSupplyComPortComboBox.SelectedItem)
-                PowerSupplyComPortComboBox.SelectedIndex = k_InvalidComboBoxItem;
+            if (sender == PowerSupplyComPortComboBox)
+                _stepMotorComPortManager.PopulateComPortComboBox(PowerSupplyComPortComboBox);
+            else if (sender == ShutterComPortComboBox)
+                _powerSupplyComPortManager.PopulateComPortComboBox(ShutterComPortComboBox);
         }
 
         private void ConnectToPowerSupply()
