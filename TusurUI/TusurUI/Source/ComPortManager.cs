@@ -22,9 +22,10 @@ namespace TusurUI.Source
         public void PopulateComPortComboBox(ComboBox otherComboBox)
         {
             string[] ports = SerialPort.GetPortNames();
-            _comboBox.ItemsSource = ports.Except(new[] { otherComboBox.SelectedItem?.ToString() }).ToArray();
+            var availablePorts = ports.Except(new[] { otherComboBox.SelectedItem?.ToString() }).ToArray();
+            _comboBox.ItemsSource = availablePorts;
 
-            if (ports.Length > 0)
+            if (availablePorts.Length > 0)
             {
                 if (!_comboBox.Items.Contains(_comboBox.SelectedItem))
                     _comboBox.SelectedIndex = 0;
@@ -35,14 +36,13 @@ namespace TusurUI.Source
 
             if (ports.Length == 1)
             {
-                _comboBox.SelectedIndex = 0;
+                if (availablePorts.Length > 0)
+                    _comboBox.SelectedIndex = 0;
                 otherComboBox.SelectedIndex = -1;
                 otherComboBox.IsEnabled = false;
             }
             else
-            {
                 otherComboBox.IsEnabled = true;
-            }
         }
         public bool CheckComPort()
         {
