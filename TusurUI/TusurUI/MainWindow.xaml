@@ -52,6 +52,5 @@
         <TextBox x:Name="TimerTextBoxSecs" Style="{DynamicResource TextBoxStyle}" ToolTip="Введите значение в секундах" HorizontalAlignment="Left" Margin="513,284,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="93" Height="54" TextChanged="TimerTextBoxSecs_TextChanged" PreviewTextInput="TimerTextBoxSecs_PreviewTextInput"/>
         <Label Style="{DynamicResource AdditionalLabel}" HorizontalAlignment="Left" Margin="613,290,0,0" VerticalAlignment="Top" Height="48" Width="42" Content="с"/>
         <Button x:Name="AddScenarioButton" Style="{DynamicResource StartButton}" Content="+" HorizontalAlignment="Left" Margin="334,351,0,0" VerticalAlignment="Top" Height="44" Width="46" Click="AddScenarioButton_Click"/>
-        <!--<Button x:Name="ResetZPButton" Style="{DynamicResource StopMotorButton}" Content="ЗП" HorizontalAlignment="Left" Margin="409,130,0,0" VerticalAlignment="Top" Height="74" Width="80" Click="ResetZPButton_Click"/>-->
     </Grid>
 </Window>
