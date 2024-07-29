@@ -23,7 +23,7 @@
          *
          * This method turns on the power supply using the specified COM port.
          */
-        void TurnOnPowerSupply(string comPort);
+        void TurnOn(string comPort);
 
         /**
          * @brief Resets the power supply.
@@ -40,7 +40,7 @@
          *
          * This method sets the current and voltage values for the power supply.
          */
-        void ApplyVoltageOnPowerSupply(double currentValue, ushort voltageValue);
+        void ApplyVoltage(double currentValue, ushort voltageValue);
 
         /**
          * @brief Reads the current and voltage values from the power supply and updates the UI.
@@ -56,6 +56,6 @@
          *
          * This method turns off the power supply using the specified COM port.
          */
-        void TurnOffPowerSupply(string comPort);
+        void TurnOff(string comPort);
     }
 }

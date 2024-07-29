@@ -31,7 +31,7 @@ namespace TusurUI.Source
 
         public bool IsConnected() { return _IsPowerSupplyConnected; }
 
-        public void TurnOnPowerSupply(string comPort)
+        public void TurnOn(string comPort)
         {
             Connect(comPort);
             ExecuteCommand(PowerSupply.TurnOn);
@@ -43,7 +43,7 @@ namespace TusurUI.Source
             ExecuteCommand(PowerSupply.Reset);
         }
 
-        public void ApplyVoltageOnPowerSupply(double currentValue, ushort voltageValue)
+        public void ApplyVoltage(double currentValue, ushort voltageValue)
         {
             ExecuteCommand(() => PowerSupply.SetCurrentVoltage((ushort)currentValue, voltageValue));
         }
@@ -65,7 +65,7 @@ namespace TusurUI.Source
             _voltageValueLabel.Content = voltageFloat.ToString("F2") + " В";
         }
 
-        public void TurnOffPowerSupply(string comPort)
+        public void TurnOff(string comPort)
         {
             Connect(comPort);
             ExecuteCommand(PowerSupply.TurnOff);

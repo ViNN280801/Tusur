@@ -22,21 +22,21 @@ namespace TusurUI.Source
             _uiHelper = uiHelper ?? throw new ArgumentNullException(nameof(uiHelper));
         }
 
-        public void OpenShutter(string comPort)
+        public void Forward(string comPort)
         {
             Connect(comPort);
             ExecuteCommand(StepMotor.Forward);
             _uiHelper.SetShutterImageToOpened();
         }
 
-        public void CloseShutter(string comPort)
+        public void Reverse(string comPort)
         {
             Connect(comPort);
             ExecuteCommand(StepMotor.Reverse);
             _uiHelper.SetShutterImageToClosed();
         }
 
-        public void StopStepMotor(string comPort)
+        public void Stop(string comPort)
         {
             Connect(comPort);
             ExecuteCommand(StepMotor.Stop);

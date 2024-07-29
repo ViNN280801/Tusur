@@ -15,7 +15,7 @@
          *
          * This method commands the step motor to move forward, effectively opening the shutter.
          */
-        void OpenShutter(string comPort);
+        void Forward(string comPort);
 
         /**
          * @brief Closes the shutter by moving the step motor backward.
@@ -23,7 +23,7 @@
          *
          * This method commands the step motor to move backward, effectively closing the shutter.
          */
-        void CloseShutter(string comPort);
+        void Reverse(string comPort);
 
         /**
          * @brief Stops the step motor.
@@ -31,22 +31,6 @@
          *
          * This method commands the step motor to stop its movement.
          */
-        void StopStepMotor(string comPort);
-
-        /**
-         * @brief Checks if the shutter is opened.
-         * @return True if the shutter is opened, otherwise false.
-         *
-         * This method verifies if the shutter is currently in the opened position.
-         */
-        bool IsShutterOpened();
-
-        /**
-         * @brief Checks if the shutter is closed.
-         * @return True if the shutter is closed, otherwise false.
-         *
-         * This method verifies if the shutter is currently in the closed position.
-         */
-        bool IsShutterClosed();
+        void Stop(string comPort);
     }
 }

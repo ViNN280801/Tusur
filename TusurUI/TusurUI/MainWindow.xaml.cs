@@ -34,9 +34,9 @@ namespace TusurUI
             InitializeComponent();
 
             _uiHelper = new UIHelper(Vaporizer, SystemStateLabel, VaporizerButtonBase, VaporizerButtonInside, Indicator, CurrentValueLabel, VoltageValueLabel);
-            _powerSupplyTimerManager = new PowerSupplyTimerManager(TimerTextBoxMins, TimerTextBoxSecs, TurnOffPowerSupply);
+            _powerSupplyTimerManager = new PowerSupplyTimerManager(TimerTextBoxMins, TimerTextBoxSecs, PowerSupplyTurnOff);
             _comPortUpdateTimerManager = new ComPortUpdateTimerManager(UpdateComPorts, k_UpdateComPortsIntervalMilliseconds);
-            _currentVoltageUpdateTimerManager = new CurrentVoltageUpdateTimerManager(UpdateCurrentVoltage, k_UpdateCurrentVoltageIntervalMilliseconds);
+            _currentVoltageUpdateTimerManager = new CurrentVoltageUpdateTimerManager(PowerSupplyUpdateCurrentVoltage, k_UpdateCurrentVoltageIntervalMilliseconds);
             _powerSupplyComPortManager = new ComPortManager(PowerSupplyComPortComboBox);
             _stepMotorComPortManager = new ComPortManager(ShutterComPortComboBox);
             _powerSupplyManager = new PowerSupplyManager(CurrentValueLabel, VoltageValueLabel);
@@ -66,9 +66,12 @@ namespace TusurUI
             _stepMotorComPortManager.PopulateComPortComboBox(PowerSupplyComPortComboBox);
         }
 
-        private void UpdateCurrentVoltage()
+        private void PowerSupplyUpdateCurrentVoltage()
         {
-            _powerSupplyManager.ReadCurrentVoltageAndChangeTextBox();
+            ExecuteWithErrorHandling(() =>
+            {
+                _powerSupplyManager.ReadCurrentVoltageAndChangeTextBox();
+            });
         }
 
         private void TimerTextBoxMins_TextChanged(object sender, TextChangedEventArgs e)
@@ -181,7 +184,7 @@ namespace TusurUI
                 _powerSupplyComPortManager.PopulateComPortComboBox(ShutterComPortComboBox);
         }
 
-        private void ConnectToPowerSupply()
+        private void PowerSupplyConnect()
         {
             ExecuteWithErrorHandling(() =>
             {
@@ -194,17 +197,17 @@ namespace TusurUI
             }, UncheckVaporizerButton);
         }
 
-        private void TurnOnPowerSupply()
+        private void PowerSupplyTurnOn()
         {
             ExecuteWithErrorHandling(() =>
             {
                 string comPort = _powerSupplyComPortManager.GetComPortName();
-                _powerSupplyManager.TurnOnPowerSupply(comPort);
+                _powerSupplyManager.TurnOn(comPort);
                 _currentVoltageUpdateTimerManager.Start();
             }, UncheckVaporizerButton);
         }
 
-        private void Reset()
+        private void PowerSupplyReset()
         {
             ExecuteWithErrorHandling(() =>
             {
@@ -213,32 +216,24 @@ namespace TusurUI
             }, UncheckVaporizerButton);
         }
 
-        private void ApplyVoltageOnPowerSupply()
+        private void PowerSupplyApplyVoltage()
         {
             ExecuteWithErrorHandling(() =>
             {
-                _powerSupplyManager.ApplyVoltageOnPowerSupply(currentValue, voltageValue);
+                _powerSupplyManager.ApplyVoltage(currentValue, voltageValue);
             }, () =>
             {
-                TurnOffPowerSupply();
+                PowerSupplyTurnOff();
                 UncheckVaporizerButton();
             });
         }
 
-        private void ReadCurrentVoltageAndChangeTextBox()
-        {
-            ExecuteWithErrorHandling(() =>
-            {
-                _powerSupplyManager.ReadCurrentVoltageAndChangeTextBox();
-            });
-        }
-
-        private void TurnOffPowerSupply()
+        private void PowerSupplyTurnOff()
         {
             ExecuteWithErrorHandling(() =>
             {
                 string comPort = _powerSupplyComPortManager.GetComPortName();
-                _powerSupplyManager.TurnOffPowerSupply(comPort);
+                _powerSupplyManager.TurnOff(comPort);
                 _currentVoltageUpdateTimerManager.Stop();
             }, UncheckVaporizerButton);
         }
@@ -248,7 +243,7 @@ namespace TusurUI
             ExecuteWithErrorHandling(() =>
             {
                 string comPort = _stepMotorComPortManager.GetComPortName();
-                _stepMotorManager.OpenShutter(comPort);
+                _stepMotorManager.Forward(comPort);
                 SetShutterImageToOpened();
                 ColorizeOpenShutterButton();
             }, () =>
@@ -263,7 +258,7 @@ namespace TusurUI
             ExecuteWithErrorHandling(() =>
             {
                 string comPort = _stepMotorComPortManager.GetComPortName();
-                _stepMotorManager.CloseShutter(comPort);
+                _stepMotorManager.Reverse(comPort);
                 SetShutterImageToClosed();
                 ColorizeCloseShutterButton();
             }, SetShutterImageToClosed);
@@ -274,7 +269,7 @@ namespace TusurUI
             ExecuteWithErrorHandling(() =>
             {
                 string comPort = _stepMotorComPortManager.GetComPortName();
-                _stepMotorManager.StopStepMotor(comPort);
+                _stepMotorManager.Reverse(comPort);
                 ColorizeStopStepMotorButton();
             });
         }
@@ -379,25 +374,25 @@ namespace TusurUI
         /// Main functions
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            //if (!AreComPortsValid())
-            //    return;
+            if (!AreComPortsValid())
+                return;
 
-            //if (!_powerSupplyManager.IsConnected())
-            //{
-            //    ShowWarning("Отсутствует связь с блоком питания. Проверьте питание на БП и подключение кабеля RS-432");
-            //    return;
-            //}
+            if (!_powerSupplyManager.IsConnected())
+            {
+                ShowWarning("Отсутствует связь с блоком питания. Проверьте питание на БП и подключение кабеля RS-432");
+                return;
+            }
 
             _uiHelper.CustomizeSystemStateLabel("Система работает", Colors.Green);
 
             try
             {
-                //TurnOnPowerSupply();
-                //ApplyVoltageOnPowerSupply();
-                //ReadCurrentVoltageAndChangeTextBox();
-                //Reset();
+                PowerSupplyTurnOn();
+                PowerSupplyApplyVoltage();
+                UpdateCurrentVoltage(); // Reads specific register for the current and voltage and updating labels in UI
+                PowerSupplyUpdateCurrentVoltage(); // Resets specific register that needed to correctly manage power supply after rebooting
 
-                StartCountdown();
+                StartCountdown(); // Starting countdown of the spraying time timer
                 StartButton.IsEnabled = false;
             }
             catch (Exception ex)
@@ -408,17 +403,17 @@ namespace TusurUI
 
         private void VaporizerButtonBase_Checked(object sender, RoutedEventArgs e)
         {
-            //if (_powerSupplyManager.IsConnected())
-            //    return;
-            //ConnectToPowerSupply();
+            if (_powerSupplyManager.IsConnected())
+                return;
+            PowerSupplyConnect();
             CheckVaporizerButton();
         }
 
         private void VaporizerButtonBase_Unchecked(object sender, RoutedEventArgs e)
         {
-            //if (!_powerSupplyManager.IsConnected())
-            //    return;
-            //TurnOffPowerSupply();
+            if (!_powerSupplyManager.IsConnected())
+                return;
+            PowerSupplyTurnOff();
             UncheckVaporizerButton();
             _powerSupplyTimerManager.ResetTimer();
         }
@@ -426,9 +421,14 @@ namespace TusurUI
         private void Window_Closed(object sender, EventArgs e)
         {
             if (_powerSupplyManager.IsConnected())
-                TurnOffPowerSupply();
+                PowerSupplyTurnOff();
             if (_stepMotorManager.IsConnected())
                 StopStepMotor();
+        }
+
+        private void AddScenarioButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
