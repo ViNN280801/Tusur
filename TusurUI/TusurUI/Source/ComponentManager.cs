@@ -24,7 +24,7 @@ namespace TusurUI.Source
         {
             if (indicator == null)
                 throw new Exception(nameof(indicator));
-            return indicator.Source as BitmapImage;
+            return (BitmapImage)indicator.Source;
         }
     }
 }
