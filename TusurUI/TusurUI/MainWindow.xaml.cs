@@ -34,7 +34,7 @@ namespace TusurUI
             InitializeComponent();
 
             _uiHelper = new UIHelper(Vaporizer, SystemStateLabel, VaporizerButtonBase, VaporizerButtonInside, Indicator, CurrentValueLabel, VoltageValueLabel);
-            _powerSupplyTimerManager = new PowerSupplyTimerManager(TimerTextBox, TurnOffPowerSupply);
+            _powerSupplyTimerManager = new PowerSupplyTimerManager(TimerTextBoxMins, TimerTextBoxSecs, TurnOffPowerSupply);
             _comPortUpdateTimerManager = new ComPortUpdateTimerManager(UpdateComPorts, k_UpdateComPortsIntervalMilliseconds);
             _currentVoltageUpdateTimerManager = new CurrentVoltageUpdateTimerManager(UpdateCurrentVoltage, k_UpdateCurrentVoltageIntervalMilliseconds);
             _powerSupplyComPortManager = new ComPortManager(PowerSupplyComPortComboBox);
@@ -52,6 +52,12 @@ namespace TusurUI
                 _uiHelper.SetShutterImageToOpened();
             else
                 _uiHelper.SetShutterImageToClosed();
+
+            // If text boxes for the timer are empty - assume that it means 0 mins 0 secs what equals to direct timer countdown
+            if (TimerTextBoxMins.Text == "" && TimerTextBoxSecs.Text == "")
+                StartButton.IsEnabled = true;
+            else
+                StartButton.IsEnabled = false;
         }
 
         private void UpdateComPorts()
@@ -65,29 +71,54 @@ namespace TusurUI
             _powerSupplyManager.ReadCurrentVoltageAndChangeTextBox();
         }
 
-        private void TimerTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void TimerTextBoxMins_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (sender is TextBox textBox)
             {
-                if (int.TryParse(textBox.Text, out int minutes) && minutes > k_InvalidTime)
+                if (int.TryParse(textBox.Text, out int minutes) && minutes >= 0)
                 {
                     textBox.ClearValue(Border.BorderBrushProperty);
                     textBox.ClearValue(Border.BorderThicknessProperty);
-                    StartButton.IsEnabled = true;
                     textBox.ToolTip = "Введите значение в минутах";
                 }
                 else
                 {
                     textBox.BorderBrush = new SolidColorBrush(Colors.Red);
                     textBox.BorderThickness = new Thickness(1);
-                    textBox.ToolTip = $"Неверное значение. Допустимый диапазон: > {k_InvalidTime} минут";
+                    textBox.ToolTip = $"Введите корректное значение в минутах";
+                    StartButton.IsEnabled = true;
                 }
             }
         }
 
-        private void TimerTextBox_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        private void TimerTextBoxSecs_TextChanged(object sender, TextChangedEventArgs e)
         {
-            e.Handled = !_powerSupplyTimerManager.IsValidTimerInput(e.Text);
+            if (sender is TextBox textBox)
+            {
+                if (int.TryParse(textBox.Text, out int seconds) && seconds >= 0)
+                {
+                    textBox.ClearValue(Border.BorderBrushProperty);
+                    textBox.ClearValue(Border.BorderThicknessProperty);
+                    textBox.ToolTip = "Введите значение в секундах";
+                }
+                else
+                {
+                    textBox.BorderBrush = new SolidColorBrush(Colors.Red);
+                    textBox.BorderThickness = new Thickness(1);
+                    textBox.ToolTip = $"Введите корректное значение в секундах";
+                    StartButton.IsEnabled = true;
+                }
+            }
+        }
+
+        private void TimerTextBoxMins_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        {
+            e.Handled = !char.IsDigit(e.Text, 0);
+        }
+
+        private void TimerTextBoxSecs_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        {
+            e.Handled = !char.IsDigit(e.Text, 0);
         }
 
         private void StartCountdown()
@@ -348,23 +379,23 @@ namespace TusurUI
         /// Main functions
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!AreComPortsValid())
-                return;
+            //if (!AreComPortsValid())
+            //    return;
 
-            if (!_powerSupplyManager.IsConnected())
-            {
-                ShowWarning("Отсутствует связь с блоком питания. Проверьте питание на БП и подключение кабеля RS-432");
-                return;
-            }
+            //if (!_powerSupplyManager.IsConnected())
+            //{
+            //    ShowWarning("Отсутствует связь с блоком питания. Проверьте питание на БП и подключение кабеля RS-432");
+            //    return;
+            //}
 
             _uiHelper.CustomizeSystemStateLabel("Система работает", Colors.Green);
 
             try
             {
-                TurnOnPowerSupply();
-                ApplyVoltageOnPowerSupply();
-                ReadCurrentVoltageAndChangeTextBox();
-                Reset();
+                //TurnOnPowerSupply();
+                //ApplyVoltageOnPowerSupply();
+                //ReadCurrentVoltageAndChangeTextBox();
+                //Reset();
 
                 StartCountdown();
                 StartButton.IsEnabled = false;
@@ -377,20 +408,19 @@ namespace TusurUI
 
         private void VaporizerButtonBase_Checked(object sender, RoutedEventArgs e)
         {
-            if (_powerSupplyManager.IsConnected())
-                return;
-
+            //if (_powerSupplyManager.IsConnected())
+            //    return;
+            //ConnectToPowerSupply();
             CheckVaporizerButton();
-            ConnectToPowerSupply();
         }
 
         private void VaporizerButtonBase_Unchecked(object sender, RoutedEventArgs e)
         {
-            if (!_powerSupplyManager.IsConnected())
-                return;
-
+            //if (!_powerSupplyManager.IsConnected())
+            //    return;
+            //TurnOffPowerSupply();
             UncheckVaporizerButton();
-            TurnOffPowerSupply();
+            _powerSupplyTimerManager.ResetTimer();
         }
 
         private void Window_Closed(object sender, EventArgs e)
