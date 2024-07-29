@@ -389,8 +389,8 @@ namespace TusurUI
             {
                 PowerSupplyTurnOn();
                 PowerSupplyApplyVoltage();
-                UpdateCurrentVoltage(); // Reads specific register for the current and voltage and updating labels in UI
-                PowerSupplyUpdateCurrentVoltage(); // Resets specific register that needed to correctly manage power supply after rebooting
+                PowerSupplyUpdateCurrentVoltage(); // Reads specific register for the current and voltage and updating labels in UI
+                PowerSupplyReset(); // Resets specific register that needed to correctly manage power supply after rebooting
 
                 StartCountdown(); // Starting countdown of the spraying time timer
                 StartButton.IsEnabled = false;
