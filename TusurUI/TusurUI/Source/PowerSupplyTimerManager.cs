@@ -2,87 +2,93 @@
 using System.Windows.Threading;
 using TusurUI.Interfaces;
 
-// The class is needed in order to set the operating time of the power supply. It works in 2 modes:
-// 1) Direct countdown
-// 2) Countdown
-// If the user has set a certain time value in the textbox, the timer will work on the countdown. 
-// Therefore, the power supply will turn off after the specified time. If the time has not been set, 
-// the textbox will simply serve as a timer so that the user can see how long the power supply is running.
 public class PowerSupplyTimerManager : IPowerSupplyTimerManager
 {
+    private const int k_SecondsInHour = 3600;
+    private const int k_SecondsInMinute = 60;
+    private const int k_MaxHours = 24;
+    private const int k_MaxMinutes = 60;
+    private const int k_MaxSeconds = 60;
+
+    private readonly TextBox _timerTextBoxHours;
     private readonly TextBox _timerTextBoxMins;
     private readonly TextBox _timerTextBoxSecs;
-    private DispatcherTimer? _timerCountdown; // Timer for the power supply (power supply turned off when timer is 0)
-    private int _remainingSeconds;
-    private bool _isDirectCountdown = false;
+    private readonly ProgressBar _progressBar;
+    private DispatcherTimer? _timerCountdown;
+    protected int _remainingSeconds;
+    public bool IsCountdown { get; set; }
     private readonly Action _turnOffPowerSupply;
 
-    public PowerSupplyTimerManager(TextBox timerTextBoxMins, TextBox timerTextBoxSecs, Action turnOffPowerSupply)
+    public bool IsRunning { get; private set; }
+
+    public PowerSupplyTimerManager(TextBox timerTextBoxHours, TextBox timerTextBoxMins, TextBox timerTextBoxSecs, ProgressBar progressBar, Action turnOffPowerSupply)
     {
+        _timerTextBoxHours = timerTextBoxHours ?? throw new ArgumentNullException(nameof(timerTextBoxHours));
         _timerTextBoxMins = timerTextBoxMins ?? throw new ArgumentNullException(nameof(timerTextBoxMins));
         _timerTextBoxSecs = timerTextBoxSecs ?? throw new ArgumentNullException(nameof(timerTextBoxSecs));
+        _progressBar = progressBar ?? throw new ArgumentNullException(nameof(progressBar));
         _turnOffPowerSupply = turnOffPowerSupply ?? throw new ArgumentNullException(nameof(turnOffPowerSupply));
     }
 
-    public void StartCountdown()
+    public void StartCountdown(bool isCountdown)
     {
+        IsCountdown = isCountdown;
+
+        bool hoursEmpty = string.IsNullOrWhiteSpace(_timerTextBoxHours.Text);
         bool minsEmpty = string.IsNullOrWhiteSpace(_timerTextBoxMins.Text);
         bool secsEmpty = string.IsNullOrWhiteSpace(_timerTextBoxSecs.Text);
 
-        if (minsEmpty && secsEmpty)
+        if (hoursEmpty && minsEmpty && secsEmpty)
         {
             _remainingSeconds = 0;
-            _isDirectCountdown = true;
-            _timerTextBoxMins.IsReadOnly = true;
-            _timerTextBoxSecs.IsReadOnly = true;
+            SetTextBoxesReadOnly(true);
         }
         else
         {
-            if (!int.TryParse(_timerTextBoxMins.Text, out int minutes) || minutes < 0)
+            if (!IsValidTimeInput(_timerTextBoxHours.Text, k_MaxHours, out int hours) ||
+                !IsValidTimeInput(_timerTextBoxMins.Text, k_MaxMinutes, out int minutes) ||
+                !IsValidTimeInput(_timerTextBoxSecs.Text, k_MaxSeconds, out int seconds))
             {
-                throw new ArgumentException("Введите корректное значение в минутах.");
+                throw new ArgumentException("Введите корректное значение времени.");
             }
 
-            if (!int.TryParse(_timerTextBoxSecs.Text, out int seconds) || seconds < 0)
-            {
-                throw new ArgumentException("Введите корректное значение в секундах.");
-            }
-
-            _remainingSeconds = (minutes * 60) + seconds;
+            _remainingSeconds = (hours * k_SecondsInHour) + (minutes * k_SecondsInMinute) + seconds;
 
             if (_remainingSeconds > 0)
             {
-                _timerTextBoxMins.IsReadOnly = true;
-                _timerTextBoxSecs.IsReadOnly = true;
-                _isDirectCountdown = false;
+                SetTextBoxesReadOnly(true);
             }
             else
             {
                 _remainingSeconds = 0;
-                _isDirectCountdown = true;
             }
         }
 
-        _timerCountdown = new DispatcherTimer();
-        _timerCountdown.Interval = TimeSpan.FromSeconds(1);
+        _progressBar.Minimum = 0;
+        _progressBar.Maximum = _remainingSeconds;
+        _progressBar.Value = 0;
+
+        _timerCountdown = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(1)
+        };
         _timerCountdown.Tick += TimerCountdown_Tick;
         _timerCountdown.Start();
+        IsRunning = true;
     }
+
 
     public void ResetTimer()
     {
         _timerCountdown?.Stop();
-        _timerTextBoxMins.IsReadOnly = false;
-        _timerTextBoxMins.Text = string.Empty;
-        _timerTextBoxSecs.IsReadOnly = false;
-        _timerTextBoxSecs.Text = string.Empty;
+        SetTextBoxesReadOnly(false);
+        ClearTextBoxes();
+        IsRunning = false;
     }
 
-    public bool IsValidTimerInput(string text) { return int.TryParse(text, out int value) && value >= 0; }
-
-    private void TimerCountdown_Tick(object? sender, EventArgs e)
+    protected virtual void TimerCountdown_Tick(object? sender, EventArgs e)
     {
-        if (_isDirectCountdown)
+        if (!IsCountdown)
         {
             _remainingSeconds++;
         }
@@ -101,10 +107,36 @@ public class PowerSupplyTimerManager : IPowerSupplyTimerManager
             }
         }
 
-        int minutes = _remainingSeconds / 60;
-        int seconds = _remainingSeconds % 60;
+        int hours = _remainingSeconds / k_SecondsInHour;
+        int minutes = (_remainingSeconds % k_SecondsInHour) / k_SecondsInMinute;
+        int seconds = _remainingSeconds % k_SecondsInMinute;
 
-        _timerTextBoxMins.Text = minutes.ToString();
-        _timerTextBoxSecs.Text = seconds.ToString();
+        _timerTextBoxHours.Text = hours.ToString("D2");
+        _timerTextBoxMins.Text = minutes.ToString("D2");
+        _timerTextBoxSecs.Text = seconds.ToString("D2");
+
+        _progressBar.Value = _progressBar.Maximum - _remainingSeconds;
+    }
+
+    private bool IsValidTimeInput(string text, int max, out int value)
+    {
+        if (text == "")
+            text = "0";
+        bool isValid = int.TryParse(text, out value) && value >= 0 && value < max;
+        return isValid;
+    }
+
+    private void SetTextBoxesReadOnly(bool isReadOnly)
+    {
+        _timerTextBoxHours.IsReadOnly = isReadOnly;
+        _timerTextBoxMins.IsReadOnly = isReadOnly;
+        _timerTextBoxSecs.IsReadOnly = isReadOnly;
+    }
+
+    private void ClearTextBoxes()
+    {
+        _timerTextBoxHours.Text = string.Empty;
+        _timerTextBoxMins.Text = string.Empty;
+        _timerTextBoxSecs.Text = string.Empty;
     }
 }
