@@ -30,27 +30,17 @@
                 </DockPanel>
             </Grid>
         </ToggleButton>
-
-        <Label Content="Величина тока" Style="{DynamicResource MainLabel}" HorizontalAlignment="Left" Margin="12,214,0,0" VerticalAlignment="Top" Height="48" Width="292"/>
-        <TextBox x:Name="CurrentSetPointTextBox" Style="{DynamicResource TextBoxStyle}" ToolTip="Введите значение от 0 до 200" HorizontalAlignment="Left" Margin="14,286,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="170" Height="55" TextChanged="CurrentSetPointTextBox_TextChanged" PreviewTextInput="CurrentSetPointTextBox_PreviewTextInput"/>
-        <Button x:Name="StartButton" Style="{DynamicResource StartButton}" Content="ЗАПУСК" HorizontalAlignment="Left" Margin="655,285,0,0" VerticalAlignment="Top" Height="56" Width="162" Click="StartButton_Click"/>
         <Label Content="Управление заслонкой" Style="{DynamicResource MainLabel}" HorizontalAlignment="Left" Margin="36,388,0,0" VerticalAlignment="Top" Height="75" Width="585"/>
         <Label Content="Состояние системы:" Style="{DynamicResource MainLabel}" HorizontalAlignment="Left" Margin="36,29,0,0" VerticalAlignment="Top" Height="48" Width="391" Grid.Row="1"/>
         <Label Content="Сила тока" Style="{DynamicResource MainLabel}" HorizontalAlignment="Left" Margin="39,159,0,0" VerticalAlignment="Top" Height="48" Width="290" Grid.Row="1"/>
         <Label x:Name="SystemStateLabel" Content="Система не работает" Style="{DynamicResource SystemStateLabel}" HorizontalAlignment="Left" Margin="432,29,0,0" VerticalAlignment="Top" Height="55" Width="362" Grid.Row="1"/>
         <Label x:Name="CurrentValueLabel" Style="{DynamicResource AdditionalLabel}" HorizontalAlignment="Left" Margin="334,159,0,0" VerticalAlignment="Top" Height="48" Width="231" Content="0 A" Grid.Row="1"/>
-        <Label Style="{DynamicResource AdditionalLabel}" HorizontalAlignment="Left" Margin="190,292,0,0" VerticalAlignment="Top" Height="48" Width="42" Content="A"/>
         <Button x:Name="StopStepMotorButton" Style="{DynamicResource StopMotorButton}" Background="White" Content="Стоп" HorizontalAlignment="Left" Margin="370,456,0,0" VerticalAlignment="Top" Height="74" Width="80" Click="StopStepMotorButton_Click"/>
         <Button x:Name="CloseShutterButton" Style="{DynamicResource StopMotorButton}" Background="White" Content="Закр" HorizontalAlignment="Left" Margin="213,456,0,0" VerticalAlignment="Top" Height="74" Width="80" Click="CloseShutterButton_Click"/>
         <Button x:Name="OpenShutterButton" Style="{DynamicResource StopMotorButton}" Background="White" Content="Откр" HorizontalAlignment="Left" Margin="52,456,0,0" VerticalAlignment="Top" Height="74" Width="80" Click="OpenShutterButton_Click"/>
         <Label Content="Напряжение" Style="{DynamicResource MainLabel}" HorizontalAlignment="Left" Margin="38,207,0,0" VerticalAlignment="Top" Height="48" Width="290" Grid.Row="1"/>
         <Label x:Name="VoltageValueLabel" Style="{DynamicResource AdditionalLabel}" HorizontalAlignment="Left" Margin="334,207,0,0" VerticalAlignment="Top" Height="48" Width="231" Content="0 В" Grid.Row="1"/>
         <Label Content="Параметры испарителя:" Style="{DynamicResource MainLabel}" HorizontalAlignment="Left" Margin="36,106,0,0" VerticalAlignment="Top" Height="48" Width="451" Grid.Row="1"/>
-        <TextBox x:Name="TimerTextBoxMins" Style="{DynamicResource TextBoxStyle}" ToolTip="Введите значение в минутах" HorizontalAlignment="Left" Margin="334,286,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="93" Height="55" TextChanged="TimerTextBoxMins_TextChanged" PreviewTextInput="TimerTextBoxMins_PreviewTextInput"/>
-        <Label Style="{DynamicResource AdditionalLabel}" HorizontalAlignment="Left" Margin="434,292,0,0" VerticalAlignment="Top" Height="48" Width="76" Content="мин"/>
-        <Label Content="Время напыления" Style="{DynamicResource MainLabel}" HorizontalAlignment="Left" Margin="328,214,0,0" VerticalAlignment="Top" Height="75" Width="364"/>
-        <TextBox x:Name="TimerTextBoxSecs" Style="{DynamicResource TextBoxStyle}" ToolTip="Введите значение в секундах" HorizontalAlignment="Left" Margin="513,284,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="93" Height="54" TextChanged="TimerTextBoxSecs_TextChanged" PreviewTextInput="TimerTextBoxSecs_PreviewTextInput"/>
-        <Label Style="{DynamicResource AdditionalLabel}" HorizontalAlignment="Left" Margin="613,290,0,0" VerticalAlignment="Top" Height="48" Width="42" Content="с"/>
-        <Button x:Name="AddScenarioButton" Style="{DynamicResource StartButton}" Content="+" HorizontalAlignment="Left" Margin="334,351,0,0" VerticalAlignment="Top" Height="44" Width="46" Click="AddScenarioButton_Click"/>
+        <Button x:Name="AddScenarioButton" Style="{DynamicResource StartButton}" Content="Задание сценариев напыления" HorizontalAlignment="Left" Margin="52,271,0,0" VerticalAlignment="Top" Height="68" Width="464" Click="AddScenarioButton_Click"/>
     </Grid>
 </Window>
