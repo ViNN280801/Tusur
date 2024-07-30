@@ -27,15 +27,14 @@ namespace TusurUI.Source
 
         PowerSupply() { }
 
+        public const ushort kdefault_Voltage = 6;
         public static int Connect(string port) { return PowerSupply_Connect(port); }
         public static int TurnOn() { return PowerSupply_TurnOn(); }
         public static int TurnOff() { return PowerSupply_TurnOff(); }
         public static int SetCurrentVoltage(ushort current, ushort voltage) { return PowerSupply_SetCurrentVoltage(current, voltage); }
         public static int ReadCurrent() { return PowerSupply_ReadCurrent(); }
-
-        public static int ReadVoltage() {  return PowerSupply_ReadVoltage(); }
+        public static int ReadVoltage() { return PowerSupply_ReadVoltage(); }
         public static int Reset() { return PowerSupply_ResetZP(); }
-
         private static string GetErrorMessageEN(int errorCode)
         {
             return errorCode switch
