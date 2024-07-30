@@ -56,9 +56,17 @@ namespace TusurUI.Source
 
         public string GetComPortName()
         {
+            if (_comboBox.SelectedItem == null)
+            {
+                throw new ArgumentNullException("Internal Error: COM-port is empty.");
+            }
+
             string? comPort = _comboBox.SelectedItem.ToString();
             if (comPort == null)
+            {
                 throw new ArgumentNullException("Internal Error: COM-port is empty.");
+            }
+
             return comPort;
         }
     }
