@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+﻿using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using TusurUI.Source;
@@ -93,6 +94,33 @@ namespace TusurUI.Helpers
         {
             ChangeTextSystemStateLabel(label);
             ColorizeSystemStateLabel(color);
+        }
+
+        private static Dictionary<TextBox, Brush> originalBorders = new Dictionary<TextBox, Brush>();
+        private static Dictionary<TextBox, Thickness> originalThicknesses = new Dictionary<TextBox, Thickness>();
+        public static void MarkTextBoxAsInvalid(TextBox textBox)
+        {
+            if (!originalBorders.ContainsKey(textBox))
+                originalBorders[textBox] = textBox.BorderBrush;
+            if (!originalThicknesses.ContainsKey(textBox))
+                originalThicknesses[textBox] = textBox.BorderThickness;
+
+            textBox.Clear();
+            textBox.BorderBrush = Brushes.Red;
+            textBox.BorderThickness = new Thickness(2);
+        }
+        public static void RestoreTextBoxStyle(TextBox textBox)
+        {
+            if (originalBorders.ContainsKey(textBox))
+            {
+                textBox.BorderBrush = originalBorders[textBox];
+                originalBorders.Remove(textBox);
+            }
+            if (originalThicknesses.ContainsKey(textBox))
+            {
+                textBox.BorderThickness = originalThicknesses[textBox];
+                originalThicknesses.Remove(textBox);
+            }
         }
     }
 }
