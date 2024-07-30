@@ -13,7 +13,7 @@
          *
          * This method initializes and starts the countdown timer based on the value provided in the associated TextBox.
          */
-        void StartCountdown();
+        void StartCountdown(bool isCountdown);
 
         /**
          * @brief Resets the countdown timer.
