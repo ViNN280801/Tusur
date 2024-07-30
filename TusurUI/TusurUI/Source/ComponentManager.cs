@@ -20,11 +20,11 @@ namespace TusurUI.Source
             indicator.Source = image;
         }
 
-        public static BitmapImage GetIndicatorImage(Image indicator)
+        public static BitmapImage? GetIndicatorImage(Image indicator)
         {
             if (indicator == null)
                 throw new Exception(nameof(indicator));
-            return (BitmapImage)indicator.Source;
+            return indicator.Source as BitmapImage;
         }
     }
 }
