@@ -105,7 +105,6 @@ namespace TusurUI.Helpers
             if (!originalThicknesses.ContainsKey(textBox))
                 originalThicknesses[textBox] = textBox.BorderThickness;
 
-            textBox.Clear();
             textBox.BorderBrush = Brushes.Red;
             textBox.BorderThickness = new Thickness(2);
         }
