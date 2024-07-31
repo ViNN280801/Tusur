@@ -1,6 +1,7 @@
 ﻿using System.IO.Ports;
 using System.Windows.Controls;
 using TusurUI.Interfaces;
+using TusurUI.Errors;
 
 namespace TusurUI.Source
 {
@@ -47,7 +48,10 @@ namespace TusurUI.Source
         public bool CheckComPort()
         {
             if (IsComPortNotSelected())
-                throw new ArgumentNullException("Internal Error: COM-port is empty.");
+            {
+                string errorMessage = ErrorMessages.Compose(ErrorMessages.GetErrorMessage("InternalError"), ErrorMessages.GetErrorMessage("EmptyCOM"));
+                throw new ArgumentNullException(errorMessage);
+            }
             return true;
         }
 
@@ -58,13 +62,15 @@ namespace TusurUI.Source
         {
             if (_comboBox.SelectedItem == null)
             {
-                throw new ArgumentNullException("Internal Error: COM-port is empty.");
+                string errorMessage = ErrorMessages.Compose(ErrorMessages.GetErrorMessage("InternalError"), ErrorMessages.GetErrorMessage("EmptyCOM"));
+                throw new ArgumentNullException(errorMessage);
             }
 
             string? comPort = _comboBox.SelectedItem.ToString();
             if (comPort == null)
             {
-                throw new ArgumentNullException("Internal Error: COM-port is empty.");
+                string errorMessage = ErrorMessages.Compose(ErrorMessages.GetErrorMessage("InternalError"), ErrorMessages.GetErrorMessage("EmptyCOM"));
+                throw new ArgumentNullException(errorMessage);
             }
 
             return comPort;

@@ -1,5 +1,7 @@
 ﻿using System.Windows.Controls;
 using System.Windows.Threading;
+using TusurUI.Errors;
+using TusurUI.Helpers;
 using TusurUI.Interfaces;
 
 public class PowerSupplyTimerManager : IPowerSupplyTimerManager
@@ -16,9 +18,8 @@ public class PowerSupplyTimerManager : IPowerSupplyTimerManager
     private readonly ProgressBar _progressBar;
     private DispatcherTimer? _timerCountdown;
     protected int _remainingSeconds;
-    public bool IsCountdown { get; set; }
+    public bool IsDirectCountdown { get; set; }
     private readonly Action _turnOffPowerSupply;
-
     public bool IsRunning { get; private set; }
 
     public PowerSupplyTimerManager(TextBox timerTextBoxHours, TextBox timerTextBoxMins, TextBox timerTextBoxSecs, ProgressBar progressBar, Action turnOffPowerSupply)
@@ -30,9 +31,9 @@ public class PowerSupplyTimerManager : IPowerSupplyTimerManager
         _turnOffPowerSupply = turnOffPowerSupply ?? throw new ArgumentNullException(nameof(turnOffPowerSupply));
     }
 
-    public void StartCountdown(bool isCountdown)
+    public void StartCountdown(bool isReverseCountdown)
     {
-        IsCountdown = isCountdown;
+        IsDirectCountdown = isReverseCountdown;
 
         bool hoursEmpty = string.IsNullOrWhiteSpace(_timerTextBoxHours.Text);
         bool minsEmpty = string.IsNullOrWhiteSpace(_timerTextBoxMins.Text);
@@ -40,8 +41,19 @@ public class PowerSupplyTimerManager : IPowerSupplyTimerManager
 
         if (hoursEmpty && minsEmpty && secsEmpty)
         {
-            _remainingSeconds = 0;
-            SetTextBoxesReadOnly(true);
+            if (isReverseCountdown)
+            {
+                UIHelper.MarkTextBoxAsInvalid(_timerTextBoxHours);
+                UIHelper.MarkTextBoxAsInvalid(_timerTextBoxMins);
+                UIHelper.MarkTextBoxAsInvalid(_timerTextBoxSecs);
+                string errorMessage = ErrorMessages.Compose(ErrorMessages.GetErrorMessage("EmptyTimeTextFields"));
+                throw new ArgumentException(errorMessage);
+            }
+            else
+            {
+                _remainingSeconds = 0;
+                SetTextBoxesReadOnly(true);
+            }
         }
         else
         {
@@ -49,7 +61,8 @@ public class PowerSupplyTimerManager : IPowerSupplyTimerManager
                 !IsValidTimeInput(_timerTextBoxMins.Text, k_MaxMinutes, out int minutes) ||
                 !IsValidTimeInput(_timerTextBoxSecs.Text, k_MaxSeconds, out int seconds))
             {
-                throw new ArgumentException("Введите корректное значение времени.");
+                string errorMessage = ErrorMessages.Compose(ErrorMessages.GetErrorMessage("InvalidTimeTextField"));
+                throw new ArgumentException(errorMessage);
             }
 
             _remainingSeconds = (hours * k_SecondsInHour) + (minutes * k_SecondsInMinute) + seconds;
@@ -76,19 +89,9 @@ public class PowerSupplyTimerManager : IPowerSupplyTimerManager
         _timerCountdown.Start();
         IsRunning = true;
     }
-
-
-    public void ResetTimer()
-    {
-        _timerCountdown?.Stop();
-        SetTextBoxesReadOnly(false);
-        ClearTextBoxes();
-        IsRunning = false;
-    }
-
     protected virtual void TimerCountdown_Tick(object? sender, EventArgs e)
     {
-        if (!IsCountdown)
+        if (!IsDirectCountdown)
         {
             _remainingSeconds++;
         }
@@ -115,7 +118,21 @@ public class PowerSupplyTimerManager : IPowerSupplyTimerManager
         _timerTextBoxMins.Text = minutes.ToString("D2");
         _timerTextBoxSecs.Text = seconds.ToString("D2");
 
-        _progressBar.Value = _progressBar.Maximum - _remainingSeconds;
+        _progressBar.Value = IsDirectCountdown ? (_progressBar.Maximum - _remainingSeconds) : _remainingSeconds;
+    }
+    public void ResetTimer()
+    {
+        _timerCountdown?.Stop();
+        _timerCountdown = null;
+        _remainingSeconds = 0;
+        IsRunning = false;
+
+        _progressBar.Minimum = 0;
+        _progressBar.Maximum = 1;
+        _progressBar.Value = 0;
+
+        ClearTextBoxes();
+        SetTextBoxesReadOnly(false);
     }
 
     private bool IsValidTimeInput(string text, int max, out int value)
