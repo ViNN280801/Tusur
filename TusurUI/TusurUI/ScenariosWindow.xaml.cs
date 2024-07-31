@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using TusurUI.Errors;
 using TusurUI.Helpers;
+using TusurUI.Logs;
 
 namespace TusurUI
 {
@@ -622,7 +623,7 @@ namespace TusurUI
             throw new Exception(errMessage);
         }
 
-        private void WriteLogFile(bool isDirectCountdown, TimeSpan initialTime, int stageNumber, StackPanel row)
+        private void WriteLogFile(string status, List<string> logEntries)
         {
             string directory = "scenarios";
             if (!Directory.Exists(directory))
@@ -635,23 +636,11 @@ namespace TusurUI
 
             using (StreamWriter writer = new StreamWriter(filePath, true))
             {
-                writer.WriteLine($"Стадия №{stageNumber}:");
-
-                foreach (var element in row.Children)
+                writer.WriteLine($"Status: {status}");
+                writer.WriteLine("Log Entries:");
+                foreach (var entry in logEntries)
                 {
-                    if (element is TextBox textBox && textBox.Name == "CurrentTextBox")
-                    {
-                        writer.WriteLine($"    Величина тока: {textBox.Text}");
-                    }
-                }
-
-                writer.WriteLine($"    Мод таймера: {(isDirectCountdown ? "Прямой отсчет" : "Обратный отсчет")}");
-                if (!isDirectCountdown)
-                {
-                    writer.WriteLine("    Настройки таймера:");
-                    writer.WriteLine($"        Часы: {initialTime.Hours}");
-                    writer.WriteLine($"        Минуты: {initialTime.Minutes}");
-                    writer.WriteLine($"        Секунды: {initialTime.Seconds}");
+                    writer.WriteLine(entry);
                 }
             }
         }
@@ -694,8 +683,6 @@ namespace TusurUI
             _timerManagers.Clear();
         }
         private void Window_Closed(object sender, EventArgs e) { FinalizeApplication(); }
-
-        /// Main functions
         private async Task StartStageAsync(ushort current, TimeSpan duration, StackPanel row, int stageNumber, CancellationToken token)
         {
             TextBox timerTextBoxHours = row.Children.OfType<TextBox>().First(tb => tb.Name == "TimerHoursTextBox");
@@ -718,6 +705,7 @@ namespace TusurUI
             }, token);
         }
 
+        /// Main functions
         private async void StartButton_Click(object sender, RoutedEventArgs e)
         {
             ResetProgressBars();
@@ -736,57 +724,110 @@ namespace TusurUI
 
             OnStart();
 
+            List<string> logEntries = new List<string>();
+            string status = LogMessages.GetLogMessage("StatusSuccess");
             int stageNumber = 1;
+
+            var savedTimerValues = new List<(string Hours, string Minutes, string Seconds)>();
+
             foreach (StackPanel row in ScenarioStackPanel.Children)
             {
                 if (row.Name != "ScenarioLabelsStackPanel")
                 {
-                    if (!_isRunning)
-                        break;
+                    TextBox timerTextBoxHours = row.Children.OfType<TextBox>().First(tb => tb.Name == "TimerHoursTextBox");
+                    TextBox timerTextBoxMins = row.Children.OfType<TextBox>().First(tb => tb.Name == "TimerMinutesTextBox");
+                    TextBox timerTextBoxSecs = row.Children.OfType<TextBox>().First(tb => tb.Name == "TimerSecondsTextBox");
 
-                    try
-                    {
-                        TextBox currentTextBox = row.Children.OfType<TextBox>().FirstOrDefault(tb => tb.Name == "CurrentTextBox") ?? throw new Exception("CurrentTextBox not found.");
-                        if (ushort.TryParse(currentTextBox.Text, out ushort current))
-                        {
-                            TimeSpan stageDuration = GetTotalTime(row);
-                            await StartStageAsync(current, stageDuration, row, stageNumber, token);
-                        }
-                        else
-                        {
-                            string errorMessage = ErrorMessages.Compose(
-                                ErrorMessages.GetErrorMessage("StageError"),
-                                string.Format(ErrorMessages.GetErrorMessage("InvalidCurrentValue"), stageNumber)
-                            );
-                            MessageBox.Show(errorMessage, ErrorMessages.GetErrorMessage("TimerErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
-                        }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        _cancelledStages.Add(stageNumber);
-                    }
-                    catch (Exception ex)
-                    {
-                        string errorMessage = ErrorMessages.Compose(
-                            ErrorMessages.GetErrorMessage("StageError"),
-                            string.Format(ErrorMessages.GetErrorMessage("ExceptionOccurred"), stageNumber, ex.Message)
-                        );
-                        MessageBox.Show(errorMessage, ErrorMessages.GetErrorMessage("TimerErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
+                    string hours = string.IsNullOrWhiteSpace(timerTextBoxHours.Text) ? "00" : timerTextBoxHours.Text.PadLeft(2, '0');
+                    string minutes = string.IsNullOrWhiteSpace(timerTextBoxMins.Text) ? "00" : timerTextBoxMins.Text.PadLeft(2, '0');
+                    string seconds = string.IsNullOrWhiteSpace(timerTextBoxSecs.Text) ? "00" : timerTextBoxSecs.Text.PadLeft(2, '0');
 
-                    stageNumber++;
+                    savedTimerValues.Add((hours, minutes, seconds));
                 }
             }
 
-            OnStop();
-            _isRunning = false;
-
-            if (_cancelledStages.Count > 0)
+            try
             {
-                string cancelledMessage = ErrorMessages.Compose(ErrorMessages.GetErrorMessage("CancelledStages"), string.Join(", ", _cancelledStages));
-                MessageBox.Show(cancelledMessage, ErrorMessages.GetErrorMessage("CancellationTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
+                int savedTimerIndex = 0;
+                foreach (StackPanel row in ScenarioStackPanel.Children)
+                {
+                    if (row.Name != "ScenarioLabelsStackPanel")
+                    {
+                        if (!_isRunning)
+                        {
+                            status = LogMessages.GetLogMessage("StatusStopped");
+                            break;
+                        }
+
+                        try
+                        {
+                            TextBox currentTextBox = row.Children.OfType<TextBox>().FirstOrDefault(tb => tb.Name == "CurrentTextBox") ?? throw new Exception("CurrentTextBox not found.");
+                            bool isReverseCountdown = IsReverseCountdown();
+
+                            if (ushort.TryParse(currentTextBox.Text, out ushort current))
+                            {
+                                TimeSpan stageDuration = GetTotalTime(row);
+                                await StartStageAsync(current, stageDuration, row, stageNumber, token);
+                                var timerValues = savedTimerValues[savedTimerIndex];
+                                logEntries.Add(string.Format(LogMessages.GetLogMessage("LogStageSuccess"), stageNumber));
+                                logEntries.Add($"    {LogMessages.GetLogMessage("LogCurrent")}: {current}");
+                                logEntries.Add($"    {LogMessages.GetLogMessage("LogTimer")}: {timerValues.Hours}:{timerValues.Minutes}:{timerValues.Seconds}");
+                                logEntries.Add($"    {LogMessages.GetLogMessage("LogMode")}: {(isReverseCountdown ? LogMessages.GetLogMessage("Reverse") : LogMessages.GetLogMessage("Direct"))}");
+                            }
+                            else
+                            {
+                                string errorMessage = ErrorMessages.Compose(
+                                    ErrorMessages.GetErrorMessage("StageError"),
+                                    string.Format(ErrorMessages.GetErrorMessage("InvalidCurrentValue"), stageNumber)
+                                );
+                                MessageBox.Show(errorMessage, ErrorMessages.GetErrorMessage("TimerErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+                                logEntries.Add(string.Format(LogMessages.GetLogMessage("LogStageFailed"), stageNumber, errorMessage));
+                                status = LogMessages.GetLogMessage("StatusFailed");
+                                _isRunning = false;
+                                break;
+                            }
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            _cancelledStages.Add(stageNumber);
+                            logEntries.Add(string.Format(LogMessages.GetLogMessage("LogStageStopped"), stageNumber));
+                            status = LogMessages.GetLogMessage("StatusStopped");
+                            _isRunning = false;
+                            break;
+                        }
+                        catch (Exception ex)
+                        {
+                            string errorMessage = ErrorMessages.Compose(
+                                ErrorMessages.GetErrorMessage("StageError"),
+                                string.Format(ErrorMessages.GetErrorMessage("ExceptionOccurred"), stageNumber, ex.Message)
+                            );
+                            MessageBox.Show(errorMessage, ErrorMessages.GetErrorMessage("TimerErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+                            logEntries.Add(string.Format(LogMessages.GetLogMessage("LogStageFailed"), stageNumber, errorMessage));
+                            status = LogMessages.GetLogMessage("StatusFailed");
+                            _isRunning = false;
+                            break;
+                        }
+
+                        stageNumber++;
+                        savedTimerIndex++;
+                    }
+                }
+            }
+            finally
+            {
+                OnStop();
+                _isRunning = false;
+
+                WriteLogFile(status, logEntries);
+
+                if (status == LogMessages.GetLogMessage("StatusStopped") || status == LogMessages.GetLogMessage("StatusFailed"))
+                {
+                    string cancelledMessage = ErrorMessages.Compose(ErrorMessages.GetErrorMessage("StageErrors"), string.Join(", ", _cancelledStages));
+                    MessageBox.Show(cancelledMessage, ErrorMessages.GetErrorMessage("CancellationTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
         }
+
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
             _isRunning = false;

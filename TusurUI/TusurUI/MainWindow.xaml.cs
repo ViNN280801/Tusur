@@ -1,9 +1,9 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using TusurUI.Source;
 using TusurUI.Helpers;
 using TusurUI.Errors;
+using TusurUI.Logs;
 
 namespace TusurUI
 {
@@ -78,12 +78,14 @@ namespace TusurUI
                     mainWindowDictionary.Source = new Uri("Resources/MainWindowUIElements.ru.xaml", UriKind.Relative);
                     scenarioWindowDictionary.Source = new Uri("Resources/ScenarioWindowUIElements.ru.xaml", UriKind.Relative);
                     ErrorMessages.SetLanguage("ru");
+                    LogMessages.SetLanguage("ru");
                     break;
                 case "en":
                 default:
                     mainWindowDictionary.Source = new Uri("Resources/MainWindowUIElements.en.xaml", UriKind.Relative);
                     scenarioWindowDictionary.Source = new Uri("Resources/ScenarioWindowUIElements.en.xaml", UriKind.Relative);
                     ErrorMessages.SetLanguage("en");
+                    LogMessages.SetLanguage("en");
                     break;
             }
 
@@ -354,25 +356,25 @@ namespace TusurUI
         }
         public async Task StartScenarioForStage(ushort current, TimeSpan duration)
         {
-            if (!AreComPortsValid())
-                return;
+            //if (!AreComPortsValid())
+            //    return;
 
-            if (!_powerSupplyManager.IsConnected())
-            {
-                string warningMessage = ErrorMessages.GetErrorMessage("PowerSupplyConnectionWarning");
-                ShowWarning(warningMessage);
-                return;
-            }
+            //if (!_powerSupplyManager.IsConnected())
+            //{
+            //    string warningMessage = ErrorMessages.GetErrorMessage("PowerSupplyConnectionWarning");
+            //    ShowWarning(warningMessage);
+            //    return;
+            //}
 
-            string systemWorkingLabel = ErrorMessages.GetErrorMessage("SystemWorkingLabel");
-            _uiHelper.CustomizeSystemStateLabel(systemWorkingLabel, Colors.Green);
+            //string systemWorkingLabel = ErrorMessages.GetErrorMessage("SystemWorkingLabel");
+            //_uiHelper.CustomizeSystemStateLabel(systemWorkingLabel, Colors.Green);
 
             try
             {
-                PowerSupplyTurnOn();
-                PowerSupplyApplyVoltage(current);
-                PowerSupplyUpdateCurrentVoltage(); // Reads specific register for the current and voltage and updating labels in UI
-                PowerSupplyReset(); // Resets specific register that needed to correctly manage power supply after rebooting
+                //PowerSupplyTurnOn();
+                //PowerSupplyApplyVoltage(current);
+                //PowerSupplyUpdateCurrentVoltage(); // Reads specific register for the current and voltage and updating labels in UI
+                //PowerSupplyReset(); // Resets specific register that needed to correctly manage power supply after rebooting
 
                 // Wait for the duration of the stage
                 await Task.Delay(duration);
