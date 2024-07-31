@@ -10,7 +10,7 @@ namespace TusurUI.Source
             if (indicator == null)
                 throw new ArgumentNullException(nameof(indicator));
             if (string.IsNullOrWhiteSpace(imagePath))
-                throw new ArgumentException("imagePath cannot be null or empty.", nameof(imagePath));
+                throw new ArgumentNullException(nameof(imagePath));
 
             var image = new BitmapImage();
             image.BeginInit();
