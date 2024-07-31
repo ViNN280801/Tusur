@@ -672,7 +672,6 @@ namespace TusurUI
         }
         private void FinalizeApplication()
         {
-            _mainWindow.AddScenarioButton.IsEnabled = true;
             if (_mainWindow._powerSupplyManager.IsConnected())
                 _mainWindow.PowerSupplyTurnOff();
             _powerSupplyTimerManager?.ResetTimer();
@@ -682,7 +681,11 @@ namespace TusurUI
             ResetProgressBars();
             _timerManagers.Clear();
         }
-        private void Window_Closed(object sender, EventArgs e) { FinalizeApplication(); }
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            FinalizeApplication();
+            _mainWindow.AddScenarioButton.IsEnabled = true;
+        }
         private async Task StartStageAsync(ushort current, TimeSpan duration, StackPanel row, int stageNumber, CancellationToken token)
         {
             TextBox timerTextBoxHours = row.Children.OfType<TextBox>().First(tb => tb.Name == "TimerHoursTextBox");
