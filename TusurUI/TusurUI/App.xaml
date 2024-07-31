@@ -7,6 +7,8 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Styles.xaml"/>
+                <ResourceDictionary x:Name="MainWindowLanguageResources" Source="Resources/MainWindowUIElements.ru.xaml"/>
+                <ResourceDictionary x:Name="ScenarioWindowLanguageResources" Source="Resources/ScenarioWindowUIElements.ru.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
