@@ -705,6 +705,25 @@ namespace TusurUI
             }, token);
         }
 
+        public void StopProgram(Exception? ex = null)
+        {
+            _cancellationTokenSource?.Cancel();
+            _isRunning = false;
+            ClearTimerTextBoxes();
+            FinalizeApplication();
+            OnStopEnableUI();
+
+            if (ex != null)
+            {
+                List<string> logEntries = new List<string>();
+                string status = LogMessages.GetLogMessage("StatusFailed");
+                string errorMessage = ex.Message;
+
+                logEntries.Add($"FAILED: {errorMessage}");
+                WriteLogFile(status, logEntries);
+            }
+        }
+
         /// Main functions
         private async void StartButton_Click(object sender, RoutedEventArgs e)
         {
@@ -828,13 +847,6 @@ namespace TusurUI
             }
         }
 
-        private void StopButton_Click(object sender, RoutedEventArgs e)
-        {
-            _isRunning = false;
-            _cancellationTokenSource?.Cancel();
-            ClearTimerTextBoxes();
-            FinalizeApplication();
-            OnStopEnableUI();
-        }
+        private void StopButton_Click(object sender, RoutedEventArgs e) { StopProgram(); }
     }
 }

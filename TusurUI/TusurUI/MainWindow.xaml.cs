@@ -4,6 +4,7 @@ using TusurUI.Source;
 using TusurUI.Helpers;
 using TusurUI.Errors;
 using TusurUI.Logs;
+using System.Windows.Media;
 
 namespace TusurUI
 {
@@ -127,8 +128,9 @@ namespace TusurUI
             {
                 _powerSupplyComPortManager.CheckComPort();
             }
-            catch (ArgumentException)
+            catch (ArgumentException ex)
             {
+                _scenariosWindow?.StopProgram(ex);
                 ShowError(ErrorMessages.GetErrorMessage("PowerSupplyComPortError"));
                 return false;
             }
@@ -137,8 +139,9 @@ namespace TusurUI
             {
                 _stepMotorComPortManager.CheckComPort();
             }
-            catch (ArgumentException)
+            catch (ArgumentException ex)
             {
+                _scenariosWindow?.StopProgram(ex);
                 ShowError(ErrorMessages.GetErrorMessage("StepMotorComPortError"));
                 return false;
             }
@@ -342,6 +345,7 @@ namespace TusurUI
             }
             catch (Exception ex)
             {
+                _scenariosWindow?.StopProgram(ex);
                 ShowError(ex.Message);
                 onError?.Invoke();
             }
@@ -356,25 +360,25 @@ namespace TusurUI
         }
         public async Task StartScenarioForStage(ushort current, TimeSpan duration)
         {
-            //if (!AreComPortsValid())
-            //    return;
+            if (!AreComPortsValid())
+                return;
 
-            //if (!_powerSupplyManager.IsConnected())
-            //{
-            //    string warningMessage = ErrorMessages.GetErrorMessage("PowerSupplyConnectionWarning");
-            //    ShowWarning(warningMessage);
-            //    return;
-            //}
+            if (!_powerSupplyManager.IsConnected())
+            {
+                string warningMessage = ErrorMessages.GetErrorMessage("PowerSupplyConnectionWarning");
+                ShowWarning(warningMessage);
+                return;
+            }
 
-            //string systemWorkingLabel = ErrorMessages.GetErrorMessage("SystemWorkingLabel");
-            //_uiHelper.CustomizeSystemStateLabel(systemWorkingLabel, Colors.Green);
+            string systemWorkingLabel = ErrorMessages.GetErrorMessage("SystemWorkingLabel");
+            _uiHelper.CustomizeSystemStateLabel(systemWorkingLabel, Colors.Green);
 
             try
             {
-                //PowerSupplyTurnOn();
-                //PowerSupplyApplyVoltage(current);
-                //PowerSupplyUpdateCurrentVoltage(); // Reads specific register for the current and voltage and updating labels in UI
-                //PowerSupplyReset(); // Resets specific register that needed to correctly manage power supply after rebooting
+                PowerSupplyTurnOn();
+                PowerSupplyApplyVoltage(current);
+                PowerSupplyUpdateCurrentVoltage(); // Reads specific register for the current and voltage and updating labels in UI
+                PowerSupplyReset(); // Resets specific register that needed to correctly manage power supply after rebooting
 
                 // Wait for the duration of the stage
                 await Task.Delay(duration);
