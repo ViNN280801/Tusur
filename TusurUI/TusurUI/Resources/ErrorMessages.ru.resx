@@ -135,6 +135,9 @@
   <data name="EmptyTimeTextFields" xml:space="preserve">
     <value>Все поля времени пустые. Введите хотя бы одно из них.</value>
   </data>
+  <data name="ErrorTitle" xml:space="preserve">
+    <value>Ошибка</value>
+  </data>
   <data name="InternalError" xml:space="preserve">
     <value>Внутренняя ошибка:</value>
   </data>
@@ -156,6 +159,24 @@
   <data name="InvalidTimeTextField" xml:space="preserve">
     <value>Введите корректное значение времени.</value>
   </data>
+  <data name="MissingCurrent" xml:space="preserve">
+    <value>Величина тока</value>
+  </data>
+  <data name="MissingHours" xml:space="preserve">
+    <value>Часы</value>
+  </data>
+  <data name="MissingMinutes" xml:space="preserve">
+    <value>Минуты</value>
+  </data>
+  <data name="MissingSeconds" xml:space="preserve">
+    <value>Секунды</value>
+  </data>
+  <data name="PowerSupplyComPortError" xml:space="preserve">
+    <value>Сначала выберите COM-порт для блока питания.</value>
+  </data>
+  <data name="PowerSupplyConnectionWarning" xml:space="preserve">
+    <value>Отсутствует связь с блоком питания. Проверьте питание на БП и подключение кабеля RS-432.</value>
+  </data>
   <data name="ProgressBarNotFound" xml:space="preserve">
     <value>Элемент пользовательского интерфейса  ProgressBar с именем '{0}' не найден.</value>
   </data>
@@ -171,6 +192,18 @@
   <data name="StageErrors" xml:space="preserve">
     <value>Стадия №{0}: {1}</value>
   </data>
+  <data name="StageSuccessMessage" xml:space="preserve">
+    <value>Стадия №{0} успешно завершена</value>
+  </data>
+  <data name="StepMotorComPortError" xml:space="preserve">
+    <value>Сначала выберите COM-порт для шагового двигателя.</value>
+  </data>
+  <data name="SuccessTitle" xml:space="preserve">
+    <value>Успех</value>
+  </data>
+  <data name="SystemWorkingLabel" xml:space="preserve">
+    <value>Система работает</value>
+  </data>
   <data name="TextBoxNotFound" xml:space="preserve">
     <value>Элемент пользовательского интерфейса TextBox с именем '{0}' не найден.</value>
   </data>
@@ -185,5 +218,8 @@
   </data>
   <data name="ValidationTitle" xml:space="preserve">
     <value>Проверка полей</value>
+  </data>
+  <data name="WarningTitle" xml:space="preserve">
+    <value>Предупреждение</value>
   </data>
 </root>

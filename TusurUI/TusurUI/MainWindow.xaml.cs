@@ -3,7 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using TusurUI.Source;
 using TusurUI.Helpers;
-using TusurUI.Resources;
+using TusurUI.Errors;
 
 namespace TusurUI
 {
@@ -22,7 +22,7 @@ namespace TusurUI
         public readonly ComPortManager _stepMotorComPortManager;
         public readonly PowerSupplyManager _powerSupplyManager;
         public readonly StepMotorManager _stepMotorManager;
-        private readonly UIHelper _uiHelper;
+        public readonly UIHelper _uiHelper;
 
         private ScenariosWindow? _scenariosWindow;
 
@@ -77,11 +77,13 @@ namespace TusurUI
                 case "ru":
                     mainWindowDictionary.Source = new Uri("Resources/MainWindowUIElements.ru.xaml", UriKind.Relative);
                     scenarioWindowDictionary.Source = new Uri("Resources/ScenarioWindowUIElements.ru.xaml", UriKind.Relative);
+                    ErrorMessages.SetLanguage("ru");
                     break;
                 case "en":
                 default:
                     mainWindowDictionary.Source = new Uri("Resources/MainWindowUIElements.en.xaml", UriKind.Relative);
                     scenarioWindowDictionary.Source = new Uri("Resources/ScenarioWindowUIElements.en.xaml", UriKind.Relative);
+                    ErrorMessages.SetLanguage("en");
                     break;
             }
 
@@ -117,7 +119,7 @@ namespace TusurUI
             });
         }
 
-        private bool AreComPortsValid()
+        public bool AreComPortsValid()
         {
             try
             {
@@ -125,7 +127,7 @@ namespace TusurUI
             }
             catch (ArgumentException)
             {
-                ShowError("Сначала выберите COM-порт для блока питания.");
+                ShowError(ErrorMessages.GetErrorMessage("PowerSupplyComPortError"));
                 return false;
             }
 
@@ -135,7 +137,7 @@ namespace TusurUI
             }
             catch (ArgumentException)
             {
-                ShowError("Сначала выберите COM-порт для шагового двигателя.");
+                ShowError(ErrorMessages.GetErrorMessage("StepMotorComPortError"));
                 return false;
             }
 
@@ -201,19 +203,29 @@ namespace TusurUI
             });
         }
 
-        public void ShowWarning(string message, string title = "Предупреждение") { MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Warning); }
-
-        public void ShowError(string message, string title = "Ошибка") { MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error); }
-
-        public void ShowSuccess(string message, string title = "Успех", int stageNumber = -1)
+        public void ShowWarning(string message, string? title = null)
         {
+            string warningTitle = title ?? ErrorMessages.GetErrorMessage("WarningTitle");
+            MessageBox.Show(message, warningTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+
+        public void ShowError(string message, string? title = null)
+        {
+            string errorTitle = title ?? ErrorMessages.GetErrorMessage("ErrorTitle");
+            MessageBox.Show(message, errorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        public void ShowSuccess(string message, string? title = null, int stageNumber = -1)
+        {
+            string successTitle = title ?? ErrorMessages.GetErrorMessage("SuccessTitle");
             if (stageNumber > 0)
             {
-                MessageBox.Show($"Стадия №{stageNumber} успешно завершена", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                string stageSuccessMessage = string.Format(ErrorMessages.GetErrorMessage("StageSuccessMessage"), stageNumber);
+                MessageBox.Show(stageSuccessMessage, successTitle, MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(message, successTitle, MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -340,46 +352,50 @@ namespace TusurUI
             _scenariosWindow.Show();
             AddScenarioButton.IsEnabled = false;
         }
-        private void StartButton_Click(object sender, RoutedEventArgs e) // TODO: move this logic to the new window
+        public async Task StartScenarioForStage(ushort current)
         {
-            //if (!AreComPortsValid())
-            //    return;
+            if (!AreComPortsValid())
+                return;
 
-            //if (!_powerSupplyManager.IsConnected())
-            //{
-            //    ShowWarning("Отсутствует связь с блоком питания. Проверьте питание на БП и подключение кабеля RS-432");
-            //    return;
-            //}
+            if (!_powerSupplyManager.IsConnected())
+            {
+                string warningMessage = ErrorMessages.GetErrorMessage("PowerSupplyConnectionWarning");
+                ShowWarning(warningMessage);
+                return;
+            }
 
-            _uiHelper.CustomizeSystemStateLabel("Система работает", Colors.Green);
+            string systemWorkingLabel = ErrorMessages.GetErrorMessage("SystemWorkingLabel");
+            _uiHelper.CustomizeSystemStateLabel(systemWorkingLabel, Colors.Green);
 
             try
             {
-                //PowerSupplyTurnOn();
-                //PowerSupplyApplyVoltage();
-                //PowerSupplyUpdateCurrentVoltage(); // Reads specific register for the current and voltage and updating labels in UI
-                //PowerSupplyReset(); // Resets specific register that needed to correctly manage power supply after rebooting
+                PowerSupplyTurnOn();
+                PowerSupplyApplyVoltage(current);
+                PowerSupplyUpdateCurrentVoltage(); // Reads specific register for the current and voltage and updating labels in UI
+                PowerSupplyReset(); // Resets specific register that needed to correctly manage power supply after rebooting
+
+                // Simulate some delay for the scenario stage
+                await Task.Delay(500);
             }
             catch (Exception ex)
             {
                 ShowError(ex.Message);
             }
         }
-
         private void VaporizerButtonBase_Checked(object sender, RoutedEventArgs e)
         {
-            //if (_powerSupplyManager.IsConnected())
-            //    return;
-            //PowerSupplyConnect();
+            if (_powerSupplyManager.IsConnected())
+                return;
             CheckVaporizerButton();
+            PowerSupplyConnect();
         }
 
         private void VaporizerButtonBase_Unchecked(object sender, RoutedEventArgs e)
         {
-            //if (!_powerSupplyManager.IsConnected())
-            //    return;
-            //PowerSupplyTurnOff();
+            if (!_powerSupplyManager.IsConnected())
+                return;
             UncheckVaporizerButton();
+            PowerSupplyTurnOff();
         }
 
         private void Window_Closed(object sender, EventArgs e)

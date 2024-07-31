@@ -135,6 +135,9 @@
   <data name="EmptyTimeTextFields" xml:space="preserve">
     <value>All time fields are empty. Enter at least one of them.</value>
   </data>
+  <data name="ErrorTitle" xml:space="preserve">
+    <value>Error</value>
+  </data>
   <data name="InternalError" xml:space="preserve">
     <value>Internal Error: </value>
   </data>
@@ -156,6 +159,24 @@
   <data name="InvalidTimeTextField" xml:space="preserve">
     <value>Enter the correct time value.</value>
   </data>
+  <data name="MissingCurrent" xml:space="preserve">
+    <value>Current value</value>
+  </data>
+  <data name="MissingHours" xml:space="preserve">
+    <value>Hours</value>
+  </data>
+  <data name="MissingMinutes" xml:space="preserve">
+    <value>Minutes</value>
+  </data>
+  <data name="MissingSeconds" xml:space="preserve">
+    <value>Seconds</value>
+  </data>
+  <data name="PowerSupplyComPortError" xml:space="preserve">
+    <value>Select the COM port for the power supply first</value>
+  </data>
+  <data name="PowerSupplyConnectionWarning" xml:space="preserve">
+    <value>No connection with the power supply. Check the power supply and RS-432 cable connection.</value>
+  </data>
   <data name="ProgressBarNotFound" xml:space="preserve">
     <value>ProgressBar UI element with name '{0}' not found.</value>
   </data>
@@ -171,6 +192,18 @@
   <data name="StageErrors" xml:space="preserve">
     <value>Stage #{0}: {1}</value>
   </data>
+  <data name="StageSuccessMessage" xml:space="preserve">
+    <value>Stage #{0} successfully completed</value>
+  </data>
+  <data name="StepMotorComPortError" xml:space="preserve">
+    <value>Select the COM port for the stepper motor first.</value>
+  </data>
+  <data name="SuccessTitle" xml:space="preserve">
+    <value>Success</value>
+  </data>
+  <data name="SystemWorkingLabel" xml:space="preserve">
+    <value>System is working</value>
+  </data>
   <data name="TextBoxNotFound" xml:space="preserve">
     <value>TextBox UI element with name '{0}' not found.</value>
   </data>
@@ -185,5 +218,8 @@
   </data>
   <data name="ValidationTitle" xml:space="preserve">
     <value>Field Validation</value>
+  </data>
+  <data name="WarningTitle" xml:space="preserve">
+    <value>Warning</value>
   </data>
 </root>

@@ -20,5 +20,11 @@ namespace TusurUI.Errors
         /// <param name="messages">The error message parts to concatenate.</param>
         /// <returns>The composed error message.</returns>
         public static string Compose(params string[] messages) { return string.Join(" ", messages); }
+
+        /// <summary>
+        /// Sets the current UI culture for error messages.
+        /// </summary>
+        /// <param name="language">The language code to set the culture to.</param>
+        public static void SetLanguage(string language) { CultureInfo.CurrentUICulture = new CultureInfo(language); }
     }
 }

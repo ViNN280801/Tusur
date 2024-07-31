@@ -426,7 +426,7 @@ namespace TusurUI
                             {
                                 if (!IsCurrentFieldValid(textBox, ref allFieldsAreZero, stageErrors))
                                 {
-                                    missingFields.Add("Величина тока");
+                                    missingFields.Add(ErrorMessages.GetErrorMessage("MissingCurrent"));
                                 }
                             }
 
@@ -436,15 +436,15 @@ namespace TusurUI
                                 {
                                     if (textBox.Name == "TimerHoursTextBox")
                                     {
-                                        missingFields.Add("Часы");
+                                        missingFields.Add(ErrorMessages.GetErrorMessage("MissingHours"));
                                     }
                                     else if (textBox.Name == "TimerMinutesTextBox")
                                     {
-                                        missingFields.Add("Минуты");
+                                        missingFields.Add(ErrorMessages.GetErrorMessage("MissingMinutes"));
                                     }
                                     else if (textBox.Name == "TimerSecondsTextBox")
                                     {
-                                        missingFields.Add("Секунды");
+                                        missingFields.Add(ErrorMessages.GetErrorMessage("MissingSeconds"));
                                     }
                                 }
                             }
@@ -702,7 +702,8 @@ namespace TusurUI
             if (!AreFieldsValid(out var missingFields, out bool allTimeFieldsAreZero, out var errorMessages))
             {
                 string combinedErrors = string.Join("\n", errorMessages);
-                MessageBox.Show(string.Format(ErrorMessages.GetErrorMessage("InvalidFields"), combinedErrors), ErrorMessages.GetErrorMessage("ValidationTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+                string errorMessage = ErrorMessages.Compose(ErrorMessages.GetErrorMessage("InvalidFields"), combinedErrors);
+                MessageBox.Show(errorMessage, ErrorMessages.GetErrorMessage("ValidationTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -723,16 +724,18 @@ namespace TusurUI
 
                     try
                     {
-                        if (IsDirectCountdown())
+                        TextBox currentTextBox = row.Children.OfType<TextBox>().FirstOrDefault(tb => tb.Name == "CurrentTextBox") ?? throw new Exception("CurrentTextBox not found.");
+                        if (ushort.TryParse(currentTextBox.Text, out ushort current))
                         {
-                            SetCountdownModeVisibility(Visibility.Collapsed);
-                            EnsureSingleRow();
-                            await StartTimerAsync(false, stageNumber, row, token);
-                            ResetProgressBars();
+                            await _mainWindow.StartScenarioForStage(current);
                         }
-                        else if (IsReverseCountdown())
+                        else
                         {
-                            await StartTimerAsync(true, stageNumber, row, token);
+                            string errorMessage = ErrorMessages.Compose(
+                                ErrorMessages.GetErrorMessage("StageError"),
+                                string.Format(ErrorMessages.GetErrorMessage("InvalidCurrentValue"), stageNumber)
+                            );
+                            MessageBox.Show(errorMessage, ErrorMessages.GetErrorMessage("TimerErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
                         }
                     }
                     catch (OperationCanceledException)
@@ -741,7 +744,11 @@ namespace TusurUI
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Стадия {stageNumber}: {ex.Message}", "Ошибка таймера", MessageBoxButton.OK, MessageBoxImage.Error);
+                        string errorMessage = ErrorMessages.Compose(
+                            ErrorMessages.GetErrorMessage("StageError"),
+                            string.Format(ErrorMessages.GetErrorMessage("ExceptionOccurred"), stageNumber, ex.Message)
+                        );
+                        MessageBox.Show(errorMessage, ErrorMessages.GetErrorMessage("TimerErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
                     }
 
                     stageNumber++;
@@ -750,6 +757,12 @@ namespace TusurUI
 
             OnStop();
             _isRunning = false;
+
+            if (_cancelledStages.Count > 0)
+            {
+                string cancelledMessage = ErrorMessages.Compose(ErrorMessages.GetErrorMessage("CancelledStages"), string.Join(", ", _cancelledStages));
+                MessageBox.Show(cancelledMessage, ErrorMessages.GetErrorMessage("CancellationTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
