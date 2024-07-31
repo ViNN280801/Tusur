@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using TusurUI.Source;
 using TusurUI.Helpers;
+using TusurUI.Resources;
 
 namespace TusurUI
 {
@@ -22,6 +23,8 @@ namespace TusurUI
         public readonly PowerSupplyManager _powerSupplyManager;
         public readonly StepMotorManager _stepMotorManager;
         private readonly UIHelper _uiHelper;
+
+        private ScenariosWindow? _scenariosWindow;
 
         public MainWindow()
         {
@@ -45,6 +48,59 @@ namespace TusurUI
                 _uiHelper.SetShutterImageToOpened();
             else
                 _uiHelper.SetShutterImageToClosed();
+        }
+
+        private void LanguageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (LanguageComboBox.SelectedItem != null)
+            {
+                string selectedLanguage = (LanguageComboBox.SelectedItem as ComboBoxItem)?.Content.ToString() ?? string.Empty;
+                if (selectedLanguage == "Русский" || selectedLanguage == "Russian")
+                {
+                    SetLanguage("ru");
+                }
+                else if (selectedLanguage == "Английский" || selectedLanguage == "English")
+                {
+                    SetLanguage("en");
+                }
+            }
+        }
+
+        private void SetLanguage(string language)
+        {
+            var mainWindowDictionary = new ResourceDictionary();
+            var scenarioWindowDictionary = new ResourceDictionary();
+            var stylesDictionary = new ResourceDictionary { Source = new Uri("Styles.xaml", UriKind.Relative) };
+
+            switch (language)
+            {
+                case "ru":
+                    mainWindowDictionary.Source = new Uri("Resources/MainWindowUIElements.ru.xaml", UriKind.Relative);
+                    scenarioWindowDictionary.Source = new Uri("Resources/ScenarioWindowUIElements.ru.xaml", UriKind.Relative);
+                    break;
+                case "en":
+                default:
+                    mainWindowDictionary.Source = new Uri("Resources/MainWindowUIElements.en.xaml", UriKind.Relative);
+                    scenarioWindowDictionary.Source = new Uri("Resources/ScenarioWindowUIElements.en.xaml", UriKind.Relative);
+                    break;
+            }
+
+            Application.Current.Resources.MergedDictionaries.Clear();
+            Application.Current.Resources.MergedDictionaries.Add(stylesDictionary);
+            Application.Current.Resources.MergedDictionaries.Add(mainWindowDictionary);
+            Application.Current.Resources.MergedDictionaries.Add(scenarioWindowDictionary);
+
+            _scenariosWindow?.TranslateUI();
+        }
+
+        private void ReloadUI()
+        {
+            foreach (Window window in Application.Current.Windows)
+            {
+                var oldContent = window.Content;
+                window.Content = null;
+                window.Content = oldContent;
+            }
         }
 
         private void UpdateComPorts()
@@ -145,11 +201,11 @@ namespace TusurUI
             });
         }
 
-        private void ShowWarning(string message, string title = "Предупреждение") { MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Warning); }
+        public void ShowWarning(string message, string title = "Предупреждение") { MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Warning); }
 
-        private void ShowError(string message, string title = "Ошибка") { MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error); }
+        public void ShowError(string message, string title = "Ошибка") { MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error); }
 
-        private void ShowSuccess(string message, string title = "Успех", int stageNumber = -1)
+        public void ShowSuccess(string message, string title = "Успех", int stageNumber = -1)
         {
             if (stageNumber > 0)
             {
@@ -280,8 +336,8 @@ namespace TusurUI
         /// Main functions
         private void AddScenarioButton_Click(object sender, RoutedEventArgs e)
         {
-            ScenariosWindow scenariosWindow = new ScenariosWindow(this);
-            scenariosWindow.Show();
+            _scenariosWindow = new ScenariosWindow(this);
+            _scenariosWindow.Show();
             AddScenarioButton.IsEnabled = false;
         }
         private void StartButton_Click(object sender, RoutedEventArgs e) // TODO: move this logic to the new window
@@ -332,6 +388,7 @@ namespace TusurUI
                 PowerSupplyTurnOff();
             if (_stepMotorManager.IsConnected())
                 StopStepMotor();
+            _scenariosWindow?.Close();
         }
     }
 }

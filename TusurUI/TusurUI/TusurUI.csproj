@@ -31,6 +31,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Page Remove="Resources\ScenarioWindowUIElements.en.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.IO.Ports" Version="8.0.0" />
   </ItemGroup>
 
@@ -52,6 +56,9 @@
     <Resource Include="Images\Ток испарителя.jpg" />
     <Resource Include="Images\Управление заслонкой.jpg" />
     <Resource Include="Images\Управление испарителем.jpg" />
+    <Resource Include="Resources\ScenarioWindowUIElements.en.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>
@@ -71,6 +78,27 @@
 
   <ItemGroup>
     <Folder Include="Libs\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\ErrorMessages.en.resx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\ErrorMessages.ru.resx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Resources\MainWindowUIElements.en.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Page>
+    <Page Update="Resources\MainWindowUIElements.ru.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Page>
+    <Page Update="Resources\ScenarioWindowUIElements.ru.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Page>
   </ItemGroup>
 
 </Project>
