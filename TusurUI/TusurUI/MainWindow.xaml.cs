@@ -352,7 +352,7 @@ namespace TusurUI
             _scenariosWindow.Show();
             AddScenarioButton.IsEnabled = false;
         }
-        public async Task StartScenarioForStage(ushort current)
+        public async Task StartScenarioForStage(ushort current, TimeSpan duration)
         {
             if (!AreComPortsValid())
                 return;
@@ -374,8 +374,8 @@ namespace TusurUI
                 PowerSupplyUpdateCurrentVoltage(); // Reads specific register for the current and voltage and updating labels in UI
                 PowerSupplyReset(); // Resets specific register that needed to correctly manage power supply after rebooting
 
-                // Simulate some delay for the scenario stage
-                await Task.Delay(500);
+                // Wait for the duration of the stage
+                await Task.Delay(duration);
             }
             catch (Exception ex)
             {

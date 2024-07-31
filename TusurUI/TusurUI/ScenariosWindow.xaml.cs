@@ -696,6 +696,28 @@ namespace TusurUI
         private void Window_Closed(object sender, EventArgs e) { FinalizeApplication(); }
 
         /// Main functions
+        private async Task StartStageAsync(ushort current, TimeSpan duration, StackPanel row, int stageNumber, CancellationToken token)
+        {
+            TextBox timerTextBoxHours = row.Children.OfType<TextBox>().First(tb => tb.Name == "TimerHoursTextBox");
+            TextBox timerTextBoxMins = row.Children.OfType<TextBox>().First(tb => tb.Name == "TimerMinutesTextBox");
+            TextBox timerTextBoxSecs = row.Children.OfType<TextBox>().First(tb => tb.Name == "TimerSecondsTextBox");
+            ProgressBar progressBar = row.Children.OfType<ProgressBar>().First(pb => pb.Name == "ProgressBar");
+
+            var timerManager = new PowerSupplyTimerManager(timerTextBoxHours, timerTextBoxMins, timerTextBoxSecs, progressBar, _mainWindow.PowerSupplyTurnOff);
+            _timerManagers.Add(timerManager);
+            timerManager.StartCountdown(IsReverseCountdown());
+
+            await _mainWindow.StartScenarioForStage(current, duration);
+
+            await Task.Run(() =>
+            {
+                while (timerManager.IsRunning)
+                {
+                    token.ThrowIfCancellationRequested();
+                }
+            }, token);
+        }
+
         private async void StartButton_Click(object sender, RoutedEventArgs e)
         {
             ResetProgressBars();
@@ -727,7 +749,8 @@ namespace TusurUI
                         TextBox currentTextBox = row.Children.OfType<TextBox>().FirstOrDefault(tb => tb.Name == "CurrentTextBox") ?? throw new Exception("CurrentTextBox not found.");
                         if (ushort.TryParse(currentTextBox.Text, out ushort current))
                         {
-                            await _mainWindow.StartScenarioForStage(current);
+                            TimeSpan stageDuration = GetTotalTime(row);
+                            await StartStageAsync(current, stageDuration, row, stageNumber, token);
                         }
                         else
                         {
