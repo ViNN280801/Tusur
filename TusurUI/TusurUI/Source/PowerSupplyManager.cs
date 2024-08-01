@@ -15,7 +15,7 @@ namespace TusurUI.Source
         private readonly Label _currentValueLabel;
         private readonly Label _voltageValueLabel;
 
-        private bool _IsPowerSupplyConnected = false;
+        private bool _IsConnected = false;
 
         public PowerSupplyManager(Label currentValueLabel, Label voltageValueLabel)
         {
@@ -26,10 +26,10 @@ namespace TusurUI.Source
         public void Connect(string comPort)
         {
             PowerSupply.Connect(comPort);
-            _IsPowerSupplyConnected = true;
+            _IsConnected = true;
         }
 
-        public bool IsConnected() { return _IsPowerSupplyConnected; }
+        public bool IsConnected() { return _IsConnected; }
 
         public void TurnOn(string comPort)
         {
@@ -76,7 +76,7 @@ namespace TusurUI.Source
             string? err = GetErrorMessage(command());
             if (err != null)
             {
-                _IsPowerSupplyConnected = false;
+                _IsConnected = false;
                 throw new Exception(err);
             }
         }

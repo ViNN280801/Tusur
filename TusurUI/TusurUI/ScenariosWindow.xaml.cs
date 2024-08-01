@@ -495,13 +495,11 @@ namespace TusurUI
             try
             {
                 // Extract the TextBoxes and ProgressBar from the row
-                TextBox timerTextBoxHours = row.Children.OfType<TextBox>().First(tb => tb.Name == "TimerHoursTextBox");
-                TextBox timerTextBoxMins = row.Children.OfType<TextBox>().First(tb => tb.Name == "TimerMinutesTextBox");
-                TextBox timerTextBoxSecs = row.Children.OfType<TextBox>().First(tb => tb.Name == "TimerSecondsTextBox");
+                var (hoursTextBox, minsTextBox, secsTextBox) = GetTimerTextBoxes(row);
                 ProgressBar progressBar = row.Children.OfType<ProgressBar>().First(pb => pb.Name == "ProgressBar");
 
                 // Create a new PowerSupplyTimerManager for each row
-                var powerSupplyTimerManager = new PowerSupplyTimerManager(timerTextBoxHours, timerTextBoxMins, timerTextBoxSecs, progressBar, _mainWindow.PowerSupplyTurnOff);
+                var powerSupplyTimerManager = new PowerSupplyTimerManager(hoursTextBox, minsTextBox, secsTextBox, progressBar, _mainWindow.PowerSupplyTurnOff);
                 _timerManagers.Add(powerSupplyTimerManager);
                 powerSupplyTimerManager.StartCountdown(isReverseCountdown);
 
@@ -590,7 +588,23 @@ namespace TusurUI
 
             return new TimeSpan(hours, minutes, seconds);
         }
-
+        private TextBox GetHoursTextBox(StackPanel row) { return row.Children.OfType<TextBox>().First(tb => tb.Name == "TimerHoursTextBox"); }
+        private TextBox GetMinutesTextBox(StackPanel row) { return row.Children.OfType<TextBox>().First(tb => tb.Name == "TimerMinutesTextBox"); }
+        private TextBox GetSecondsTextBox(StackPanel row) { return row.Children.OfType<TextBox>().First(tb => tb.Name == "TimerSecondsTextBox"); }
+        private (TextBox Hours, TextBox Minutes, TextBox Seconds) GetTimerTextBoxes(StackPanel row)
+        {
+            TextBox hours = GetHoursTextBox(row);
+            TextBox mins = GetMinutesTextBox(row);
+            TextBox secs = GetSecondsTextBox(row);
+            return (hours, mins, secs);
+        }
+        private (string Hours, string Minutes, string Seconds) GetFormattedTimerValues(TextBox hoursTextBox, TextBox minutesTextBox, TextBox secondsTextBox)
+        {
+            string hours = string.IsNullOrWhiteSpace(hoursTextBox.Text) ? "00" : hoursTextBox.Text.PadLeft(2, '0');
+            string minutes = string.IsNullOrWhiteSpace(minutesTextBox.Text) ? "00" : minutesTextBox.Text.PadLeft(2, '0');
+            string seconds = string.IsNullOrWhiteSpace(secondsTextBox.Text) ? "00" : secondsTextBox.Text.PadLeft(2, '0');
+            return (hours, minutes, seconds);
+        }
         private TextBox GetTextBoxByName(string name)
         {
             foreach (var element in ScenarioControlsStackPanel.Children)
@@ -662,14 +676,6 @@ namespace TusurUI
             StartButton.IsEnabled = true;
             StopButton.IsEnabled = false;
         }
-        private void OnStart()
-        {
-            OnStartDisableUI();
-        }
-        private void OnStop()
-        {
-            OnStopEnableUI();
-        }
         private void FinalizeApplication()
         {
             if (_mainWindow._powerSupplyManager.IsConnected())
@@ -686,14 +692,28 @@ namespace TusurUI
             FinalizeApplication();
             _mainWindow.AddScenarioButton.IsEnabled = true;
         }
+        private List<(string Hours, string Minutes, string Seconds)> SaveTimerValues()
+        {
+            var savedTimerValues = new List<(string Hours, string Minutes, string Seconds)>();
+
+            foreach (StackPanel row in ScenarioStackPanel.Children)
+            {
+                if (row.Name != "ScenarioLabelsStackPanel")
+                {
+                    var (hoursTextBox, minsTextBox, secsTextBox) = GetTimerTextBoxes(row);
+                    var (hours, minutes, seconds) = GetFormattedTimerValues(hoursTextBox, minsTextBox, secsTextBox);
+                    savedTimerValues.Add((hours, minutes, seconds));
+                }
+            }
+
+            return savedTimerValues;
+        }
         private async Task StartStageAsync(ushort current, TimeSpan duration, StackPanel row, int stageNumber, CancellationToken token)
         {
-            TextBox timerTextBoxHours = row.Children.OfType<TextBox>().First(tb => tb.Name == "TimerHoursTextBox");
-            TextBox timerTextBoxMins = row.Children.OfType<TextBox>().First(tb => tb.Name == "TimerMinutesTextBox");
-            TextBox timerTextBoxSecs = row.Children.OfType<TextBox>().First(tb => tb.Name == "TimerSecondsTextBox");
+            var (hoursTextBox, minsTextBox, secsTextBox) = GetTimerTextBoxes(row);
             ProgressBar progressBar = row.Children.OfType<ProgressBar>().First(pb => pb.Name == "ProgressBar");
 
-            var timerManager = new PowerSupplyTimerManager(timerTextBoxHours, timerTextBoxMins, timerTextBoxSecs, progressBar, _mainWindow.PowerSupplyTurnOff);
+            var timerManager = new PowerSupplyTimerManager(hoursTextBox, minsTextBox, secsTextBox, progressBar, _mainWindow.PowerSupplyTurnOff);
             _timerManagers.Add(timerManager);
             timerManager.StartCountdown(IsReverseCountdown());
 
@@ -744,30 +764,13 @@ namespace TusurUI
             _isRunning = true;
             _cancelledStages.Clear();
 
-            OnStart();
+            OnStartDisableUI();
 
             List<string> logEntries = new List<string>();
             string status = LogMessages.GetLogMessage("StatusSuccess");
             int stageNumber = 1;
 
-            var savedTimerValues = new List<(string Hours, string Minutes, string Seconds)>();
-
-            foreach (StackPanel row in ScenarioStackPanel.Children)
-            {
-                if (row.Name != "ScenarioLabelsStackPanel")
-                {
-                    TextBox timerTextBoxHours = row.Children.OfType<TextBox>().First(tb => tb.Name == "TimerHoursTextBox");
-                    TextBox timerTextBoxMins = row.Children.OfType<TextBox>().First(tb => tb.Name == "TimerMinutesTextBox");
-                    TextBox timerTextBoxSecs = row.Children.OfType<TextBox>().First(tb => tb.Name == "TimerSecondsTextBox");
-
-                    string hours = string.IsNullOrWhiteSpace(timerTextBoxHours.Text) ? "00" : timerTextBoxHours.Text.PadLeft(2, '0');
-                    string minutes = string.IsNullOrWhiteSpace(timerTextBoxMins.Text) ? "00" : timerTextBoxMins.Text.PadLeft(2, '0');
-                    string seconds = string.IsNullOrWhiteSpace(timerTextBoxSecs.Text) ? "00" : timerTextBoxSecs.Text.PadLeft(2, '0');
-
-                    savedTimerValues.Add((hours, minutes, seconds));
-                }
-            }
-
+            var savedTimerValues = SaveTimerValues();
             try
             {
                 int savedTimerIndex = 0;
@@ -789,7 +792,11 @@ namespace TusurUI
                             if (ushort.TryParse(currentTextBox.Text, out ushort current))
                             {
                                 TimeSpan stageDuration = GetTotalTime(row);
-                                await StartStageAsync(current, stageDuration, row, stageNumber, token);
+
+                                // Main logic to start the stage
+                                await StartTimerAsync(isReverseCountdown, stageNumber, row, token);
+                                //await StartStageAsync(current, stageDuration, row, stageNumber, token);
+
                                 var timerValues = savedTimerValues[savedTimerIndex];
                                 logEntries.Add(string.Format(LogMessages.GetLogMessage("LogStageSuccess"), stageNumber));
                                 logEntries.Add($"    {LogMessages.GetLogMessage("LogCurrent")}: {current}");
@@ -837,7 +844,7 @@ namespace TusurUI
             }
             finally
             {
-                OnStop();
+                OnStopEnableUI();
                 _isRunning = false;
 
                 WriteLogFile(status, logEntries);
