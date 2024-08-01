@@ -2,6 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
+using TusurUI.Errors;
 using TusurUI.Source;
 
 namespace TusurUI.Helpers
@@ -47,14 +48,14 @@ namespace TusurUI.Helpers
 
         public void UncheckVaporizerButton()
         {
-            _systemStateLabel.Content = "Система не работает";
+            _systemStateLabel.Content = ErrorMessages.GetErrorMessage("SystemNotWorkingLabel");
             _systemStateLabel.Foreground = new SolidColorBrush(Colors.Red);
             _vaporizerButtonBase.Background = new SolidColorBrush(Colors.White);
             DockPanel.SetDock(_vaporizerButtonInside, Dock.Left);
             ComponentManager.ChangeIndicatorPicture(_indicator, "Images/индикатор откл.jpg");
 
-            _currentValueLabel.Content = "0 A";
-            _voltageValueLabel.Content = "0 В";
+            _currentValueLabel.Content = "0";
+            _voltageValueLabel.Content = "0";
         }
 
         public void SetShutterImageToClosed()

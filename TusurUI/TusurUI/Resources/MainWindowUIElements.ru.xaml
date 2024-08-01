@@ -20,4 +20,6 @@
     <sys:String x:Key="OpenShutterButton">Откр</sys:String>
     <sys:String x:Key="CloseShutterButton">Закр</sys:String>
     <sys:String x:Key="StopStepMotorButton">Стоп</sys:String>
+    <sys:String x:Key="CurrentMeasurementUnits">А</sys:String>
+    <sys:String x:Key="VoltageMeasurementUnits">В</sys:String>
 </ResourceDictionary>

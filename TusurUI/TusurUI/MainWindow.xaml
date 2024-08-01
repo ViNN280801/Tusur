@@ -38,13 +38,15 @@
         <Label Content="{DynamicResource SystemStateLabelLang}" Style="{DynamicResource MainLabel}" HorizontalAlignment="Left" Margin="36,29,0,0" VerticalAlignment="Top" Height="55" Width="391" Grid.Row="1"/>
         <Label Content="{DynamicResource CurrentValueLabel}" Style="{DynamicResource MainLabel}" HorizontalAlignment="Left" Margin="39,159,0,0" VerticalAlignment="Top" Height="48" Width="290" Grid.Row="1"/>
         <Label x:Name="SystemStateLabel" Content="{DynamicResource SystemNotWorkingLabel}" Style="{DynamicResource SystemStateLabel}" HorizontalAlignment="Left" Margin="432,29,0,0" VerticalAlignment="Top" Height="55" Width="424" Grid.Row="1"/>
-        <Label x:Name="CurrentValueLabel" Style="{DynamicResource AdditionalLabel}" HorizontalAlignment="Left" Margin="334,159,0,0" VerticalAlignment="Top" Height="48" Width="231" Content="0 A" Grid.Row="1"/>
+        <Label x:Name="CurrentValueLabel" Style="{DynamicResource AdditionalLabel}" HorizontalAlignment="Left" Margin="334,159,0,0" VerticalAlignment="Top" Height="48" Width="182" Content="0 " Grid.Row="1"/>
         <Button x:Name="StopStepMotorButton" Style="{DynamicResource StopMotorButton}" Background="White" Content="{DynamicResource StopStepMotorButton}" HorizontalAlignment="Left" Margin="370,456,0,0" VerticalAlignment="Top" Height="74" Width="80" Click="StopStepMotorButton_Click"/>
         <Button x:Name="CloseShutterButton" Style="{DynamicResource StopMotorButton}" Background="White" Content="{DynamicResource CloseShutterButton}" HorizontalAlignment="Left" Margin="213,456,0,0" VerticalAlignment="Top" Height="74" Width="80" Click="CloseShutterButton_Click"/>
         <Button x:Name="OpenShutterButton" Style="{DynamicResource StopMotorButton}" Background="White" Content="{DynamicResource OpenShutterButton}" HorizontalAlignment="Left" Margin="52,456,0,0" VerticalAlignment="Top" Height="74" Width="80" Click="OpenShutterButton_Click"/>
         <Label Content="{DynamicResource VoltageValueLabel}" Style="{DynamicResource MainLabel}" HorizontalAlignment="Left" Margin="38,207,0,0" VerticalAlignment="Top" Height="55" Width="290" Grid.Row="1"/>
-        <Label x:Name="VoltageValueLabel" Style="{DynamicResource AdditionalLabel}" HorizontalAlignment="Left" Margin="334,207,0,0" VerticalAlignment="Top" Height="48" Width="231" Content="0 В" Grid.Row="1"/>
+        <Label x:Name="VoltageValueLabel" Style="{DynamicResource AdditionalLabel}" HorizontalAlignment="Left" Margin="334,207,0,0" VerticalAlignment="Top" Height="48" Width="182" Content="0" Grid.Row="1"/>
         <Label Content="{DynamicResource VaporizerParameters}" Style="{DynamicResource MainLabel}" HorizontalAlignment="Left" Margin="36,106,0,0" VerticalAlignment="Top" Height="48" Width="451" Grid.Row="1"/>
         <Button x:Name="AddScenarioButton" Style="{DynamicResource StartButton}" Content="{DynamicResource SetSprayingScenarios}" HorizontalAlignment="Left" Margin="52,271,0,0" VerticalAlignment="Top" Height="68" Width="464" Click="AddScenarioButton_Click"/>
+        <Label x:Name="CurrentUnits" Content="{DynamicResource CurrentMeasurementUnits}" Style="{DynamicResource MainLabel}" HorizontalAlignment="Left" Margin="521,159,0,0" VerticalAlignment="Top" Height="48" Width="38" Grid.Row="1"/>
+        <Label x:Name="VoltageUnits" Content="{DynamicResource VoltageMeasurementUnits}" Style="{DynamicResource MainLabel}" HorizontalAlignment="Left" Margin="521,207,0,0" VerticalAlignment="Top" Height="48" Width="38" Grid.Row="1"/>
     </Grid>
 </Window>

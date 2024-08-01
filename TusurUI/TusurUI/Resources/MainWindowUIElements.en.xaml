@@ -20,4 +20,6 @@
     <sys:String x:Key="OpenShutterButton">Open</sys:String>
     <sys:String x:Key="CloseShutterButton">Close</sys:String>
     <sys:String x:Key="StopStepMotorButton">Stop</sys:String>
+    <sys:String x:Key="CurrentMeasurementUnits">A</sys:String>
+    <sys:String x:Key="VoltageMeasurementUnits">V</sys:String>
 </ResourceDictionary>

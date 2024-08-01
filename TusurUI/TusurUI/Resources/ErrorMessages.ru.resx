@@ -201,6 +201,9 @@
   <data name="SuccessTitle" xml:space="preserve">
     <value>Успех</value>
   </data>
+  <data name="SystemNotWorkingLabel" xml:space="preserve">
+    <value>Система не работает</value>
+  </data>
   <data name="SystemWorkingLabel" xml:space="preserve">
     <value>Система работает</value>
   </data>

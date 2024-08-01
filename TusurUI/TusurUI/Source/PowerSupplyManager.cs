@@ -54,7 +54,7 @@ namespace TusurUI.Source
             if (current == -1)
                 throw new Exception(PowerSupply.GetErrorMessage(current));
 
-            _currentValueLabel.Content = current.ToString() + " A";
+            _currentValueLabel.Content = current.ToString();
 
             int voltage = PowerSupply.ReadVoltage();
             if (voltage == -2)
@@ -62,7 +62,7 @@ namespace TusurUI.Source
 
             // Convert the voltage to float by dividing by 100
             float voltageFloat = voltage / 100.0f;
-            _voltageValueLabel.Content = voltageFloat.ToString("F2") + " В";
+            _voltageValueLabel.Content = voltageFloat.ToString("F2");
         }
 
         public void TurnOff(string comPort)

@@ -201,8 +201,11 @@
   <data name="SuccessTitle" xml:space="preserve">
     <value>Success</value>
   </data>
+  <data name="SystemNotWorkingLabel" xml:space="preserve">
+    <value>System is not operational</value>
+  </data>
   <data name="SystemWorkingLabel" xml:space="preserve">
-    <value>System is working</value>
+    <value>System is operational</value>
   </data>
   <data name="TextBoxNotFound" xml:space="preserve">
     <value>TextBox UI element with name '{0}' not found.</value>

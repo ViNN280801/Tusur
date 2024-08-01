@@ -64,6 +64,23 @@ namespace TusurUI
                 {
                     SetLanguage("en");
                 }
+
+                // Translating dynamic label
+                if (SystemStateLabel != null)
+                {
+                    var foregroundBrush = SystemStateLabel.Foreground as SolidColorBrush;
+                    if (foregroundBrush != null)
+                    {
+                        if (foregroundBrush.Color == Colors.Red)
+                        {
+                            SystemStateLabel.Content = ErrorMessages.GetErrorMessage("SystemNotWorkingLabel");
+                        }
+                        else if (foregroundBrush.Color == Colors.Green)
+                        {
+                            SystemStateLabel.Content = ErrorMessages.GetErrorMessage("SystemWorkingLabel");
+                        }
+                    }
+                }
             }
         }
 
@@ -96,16 +113,6 @@ namespace TusurUI
             Application.Current.Resources.MergedDictionaries.Add(scenarioWindowDictionary);
 
             _scenariosWindow?.TranslateUI();
-        }
-
-        private void ReloadUI()
-        {
-            foreach (Window window in Application.Current.Windows)
-            {
-                var oldContent = window.Content;
-                window.Content = null;
-                window.Content = oldContent;
-            }
         }
 
         private void UpdateComPorts()
