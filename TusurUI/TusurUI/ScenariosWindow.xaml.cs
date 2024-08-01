@@ -490,40 +490,6 @@ namespace TusurUI
         }
         private bool IsDirectCountdown() { return CountdownModeCheckBox.IsChecked == true; }
         private bool IsReverseCountdown() { return CountdownModeCheckBox.IsChecked == false; }
-        private async Task StartTimerAsync(bool isReverseCountdown, int stageNumber, StackPanel row, CancellationToken token)
-        {
-            try
-            {
-                // Extract the TextBoxes and ProgressBar from the row
-                var (hoursTextBox, minsTextBox, secsTextBox) = GetTimerTextBoxes(row);
-                ProgressBar progressBar = row.Children.OfType<ProgressBar>().First(pb => pb.Name == "ProgressBar");
-
-                // Create a new PowerSupplyTimerManager for each row
-                var powerSupplyTimerManager = new PowerSupplyTimerManager(hoursTextBox, minsTextBox, secsTextBox, progressBar, _mainWindow.PowerSupplyTurnOff);
-                _timerManagers.Add(powerSupplyTimerManager);
-                powerSupplyTimerManager.StartCountdown(isReverseCountdown);
-
-                await Task.Run(() =>
-                {
-                    while (powerSupplyTimerManager.IsRunning)
-                    {
-                        token.ThrowIfCancellationRequested();
-                    }
-                }, token);
-            }
-            catch (OperationCanceledException)
-            {
-                if (IsReverseCountdown())
-                    MessageBox.Show(ErrorMessages.GetErrorMessage("StageCancelledReverse"), ErrorMessages.GetErrorMessage("CancellationTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
-                else if (IsDirectCountdown())
-                    MessageBox.Show(ErrorMessages.GetErrorMessage("StageCancelledDirect"), ErrorMessages.GetErrorMessage("CancellationTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(string.Format(ErrorMessages.GetErrorMessage("TimerError"), stageNumber, ex.Message), ErrorMessages.GetErrorMessage("TimerErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
         private void SetTextBoxesEnabled(bool isEnabled)
         {
             foreach (var element in ScenarioControlsStackPanel.Children)
@@ -794,8 +760,7 @@ namespace TusurUI
                                 TimeSpan stageDuration = GetTotalTime(row);
 
                                 // Main logic to start the stage
-                                await StartTimerAsync(isReverseCountdown, stageNumber, row, token);
-                                //await StartStageAsync(current, stageDuration, row, stageNumber, token);
+                                await StartStageAsync(current, stageDuration, row, stageNumber, token);
 
                                 var timerValues = savedTimerValues[savedTimerIndex];
                                 logEntries.Add(string.Format(LogMessages.GetLogMessage("LogStageSuccess"), stageNumber));
