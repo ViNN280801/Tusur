@@ -305,7 +305,7 @@ namespace TusurUI
             }, UncheckVaporizerButton);
         }
 
-        public void PowerSupplyApplyVoltage(ushort current)
+        public void PowerSupplyApplyCurrent(ushort current)
         {
             ExecuteWithErrorHandling(() =>
             {
@@ -383,7 +383,7 @@ namespace TusurUI
             try
             {
                 PowerSupplyTurnOn();
-                PowerSupplyApplyVoltage(current);
+                PowerSupplyApplyCurrent(current);
                 PowerSupplyUpdateCurrentVoltage(); // Reads specific register for the current and voltage and updating labels in UI
                 PowerSupplyReset(); // Resets specific register that needed to correctly manage power supply after rebooting
 
