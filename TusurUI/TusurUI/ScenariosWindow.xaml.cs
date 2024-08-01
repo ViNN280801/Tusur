@@ -774,7 +774,7 @@ namespace TusurUI
                                     ErrorMessages.GetErrorMessage("StageError"),
                                     string.Format(ErrorMessages.GetErrorMessage("InvalidCurrentValue"), stageNumber)
                                 );
-                                MessageBox.Show(errorMessage, ErrorMessages.GetErrorMessage("TimerErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+                                //MessageBox.Show(errorMessage, ErrorMessages.GetErrorMessage("TimerErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
                                 logEntries.Add(string.Format(LogMessages.GetLogMessage("LogStageFailed"), stageNumber, errorMessage));
                                 status = LogMessages.GetLogMessage("StatusFailed");
                                 _isRunning = false;
@@ -795,7 +795,7 @@ namespace TusurUI
                                 ErrorMessages.GetErrorMessage("StageError"),
                                 string.Format(ErrorMessages.GetErrorMessage("ExceptionOccurred"), stageNumber, ex.Message)
                             );
-                            MessageBox.Show(errorMessage, ErrorMessages.GetErrorMessage("TimerErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+                            //MessageBox.Show(errorMessage, ErrorMessages.GetErrorMessage("TimerErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
                             logEntries.Add(string.Format(LogMessages.GetLogMessage("LogStageFailed"), stageNumber, errorMessage));
                             status = LogMessages.GetLogMessage("StatusFailed");
                             _isRunning = false;
@@ -817,7 +817,7 @@ namespace TusurUI
                 if (status == LogMessages.GetLogMessage("StatusStopped") || status == LogMessages.GetLogMessage("StatusFailed"))
                 {
                     string cancelledMessage = ErrorMessages.Compose(ErrorMessages.GetErrorMessage("StageErrors"), string.Join(", ", _cancelledStages));
-                    MessageBox.Show(cancelledMessage, ErrorMessages.GetErrorMessage("CancellationTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
+                    //MessageBox.Show(cancelledMessage, ErrorMessages.GetErrorMessage("CancellationTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
         }
