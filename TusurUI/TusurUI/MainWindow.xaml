@@ -20,6 +20,7 @@
             </ComboBox>
             <ComboBox x:Name="PowerSupplyComPortComboBox" Width="90" ToolTip="{DynamicResource PowerSupplyComPortTooltip}" SelectionChanged="ComboBox_SelectionChanged"/>
             <ComboBox x:Name="ShutterComPortComboBox" Width="90" ToolTip="{DynamicResource ShutterComPortTooltip}" SelectionChanged="ComboBox_SelectionChanged"/>
+            <Button x:Name="ScanComPortsButton" Content="{DynamicResource ScanComPortsButtonContent}" ToolTip="{DynamicResource ScanComPortsTooltip}" HorizontalAlignment="Left" Width="169" Click="ScanComPortsButton_Click"/>
         </ToolBar>
 
         <Image x:Name="Indicator" HorizontalAlignment="Left" Height="98" Margin="564,115,0,0" VerticalAlignment="Top" Width="102" Source="/Images/индикатор откл.jpg"/>

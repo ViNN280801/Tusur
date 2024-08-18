@@ -16,6 +16,8 @@
     <sys:String x:Key="VoltageValueLabel">Напряжение</sys:String>
     <sys:String x:Key="PowerSupplyComPortTooltip">COM-порт для управления источником питания</sys:String>
     <sys:String x:Key="ShutterComPortTooltip">COM-порт для управления затвором</sys:String>
+    <sys:String x:Key="ScanComPortsButtonContent">Сканировать COM-порты</sys:String>
+    <sys:String x:Key="ScanComPortsTooltip">Запуск сканирования COM-портов. Все найденные COM-порты заполнят соответсвующие выпадающие списки</sys:String>
     <sys:String x:Key="VaporizerLabel">Испаритель</sys:String>
     <sys:String x:Key="OpenShutterButton">Откр</sys:String>
     <sys:String x:Key="CloseShutterButton">Закр</sys:String>

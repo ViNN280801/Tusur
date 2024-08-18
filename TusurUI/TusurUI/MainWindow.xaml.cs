@@ -14,25 +14,23 @@ namespace TusurUI
         private const int k_InvalidTime = 0;
         private const int k_MinCurrentValue = 0;
         private const int k_MaxCurrentValue = 200;
-        private const int k_UpdateComPortsIntervalMilliseconds = 5000;
         private const int k_UpdateCurrentVoltageIntervalMilliseconds = 100;
 
-        public readonly ComPortUpdateTimerManager _comPortUpdateTimerManager;
-        public readonly CurrentVoltageUpdateTimerManager _currentVoltageUpdateTimerManager;
-        public readonly ComPortManager _powerSupplyComPortManager;
-        public readonly ComPortManager _stepMotorComPortManager;
+        private readonly CurrentVoltageUpdateTimerManager _currentVoltageUpdateTimerManager;
+        private readonly ComPortManager _powerSupplyComPortManager;
+        private readonly ComPortManager _stepMotorComPortManager;
         public readonly PowerSupplyManager _powerSupplyManager;
-        public readonly StepMotorManager _stepMotorManager;
-        public readonly UIHelper _uiHelper;
+        private readonly StepMotorManager _stepMotorManager;
+        private readonly UIHelper _uiHelper;
 
         private ScenariosWindow? _scenariosWindow;
 
         public MainWindow()
         {
             InitializeComponent();
+            UpdateComPorts(); // Filling COM-ports.
 
             _uiHelper = new UIHelper(Vaporizer, SystemStateLabel, VaporizerButtonBase, VaporizerButtonInside, Indicator, CurrentValueLabel, VoltageValueLabel);
-            _comPortUpdateTimerManager = new ComPortUpdateTimerManager(UpdateComPorts, k_UpdateComPortsIntervalMilliseconds);
             _currentVoltageUpdateTimerManager = new CurrentVoltageUpdateTimerManager(PowerSupplyUpdateCurrentVoltage, k_UpdateCurrentVoltageIntervalMilliseconds);
             _powerSupplyComPortManager = new ComPortManager(PowerSupplyComPortComboBox);
             _stepMotorComPortManager = new ComPortManager(ShutterComPortComboBox);
@@ -42,13 +40,28 @@ namespace TusurUI
             PowerSupplyComPortComboBox.SelectionChanged += ComboBox_SelectionChanged;
             ShutterComPortComboBox.SelectionChanged += ComboBox_SelectionChanged;
 
-            _comPortUpdateTimerManager.Start();
-
             // If shutter opened when program started - change icon.
             if (_stepMotorManager.IsShutterOpened())
                 _uiHelper.SetShutterImageToOpened();
             else
                 _uiHelper.SetShutterImageToClosed();
+        }
+
+        private string? GetLanguage()
+        {
+            if (LanguageComboBox.SelectedItem != null)
+            {
+                string selectedLanguage = (LanguageComboBox.SelectedItem as ComboBoxItem)?.Content.ToString() ?? string.Empty;
+                if (selectedLanguage == "Русский" || selectedLanguage == "Russian")
+                {
+                    return "ru";
+                }
+                else if (selectedLanguage == "Английский" || selectedLanguage == "English")
+                {
+                    return "en";
+                }
+            }
+            return null;
         }
 
         private void LanguageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -117,8 +130,55 @@ namespace TusurUI
 
         private void UpdateComPorts()
         {
-            _powerSupplyComPortManager.PopulateComPortComboBox(ShutterComPortComboBox);
-            _stepMotorComPortManager.PopulateComPortComboBox(PowerSupplyComPortComboBox);
+            try
+            {
+                _powerSupplyComPortManager.PopulateComPortComboBox(ShutterComPortComboBox);
+                _stepMotorComPortManager.PopulateComPortComboBox(PowerSupplyComPortComboBox);
+
+                int shutterComPortsCount = ShutterComPortComboBox.Items.Count;
+                int powerSupplyComPortsCount = PowerSupplyComPortComboBox.Items.Count;
+
+                if (shutterComPortsCount > 0 || powerSupplyComPortsCount > 0)
+                {
+                    var foundPorts = new List<string>();
+                    if (shutterComPortsCount > 0)
+                        foundPorts.AddRange(ShutterComPortComboBox.Items.Cast<string>());
+                    if (powerSupplyComPortsCount > 0)
+                        foundPorts.AddRange(PowerSupplyComPortComboBox.Items.Cast<string>());
+
+                    string successMessage;
+                    if (GetLanguage() == "en")
+                        successMessage = $"COM ports found: {string.Join(", ", foundPorts)}";
+                    else if (GetLanguage() == "ru")
+                        successMessage = $"Найдены COM-порты: {string.Join(", ", foundPorts)}";
+                    else
+                        successMessage = $"COM ports found: {string.Join(", ", foundPorts)}";
+
+                    ShowSuccess(successMessage);
+                }
+                else
+                {
+                    string warningMessage;
+                    if (GetLanguage() == "en")
+                        warningMessage = "No COM-ports were found.";
+                    else if (GetLanguage() == "ru")
+                        warningMessage = "Не было найдено ни одного COM-порта.";
+                    else
+                        warningMessage = "No COM-ports were found.";
+
+                    ShowWarning(warningMessage);
+                }
+            }
+            catch (Exception)
+            {
+                string errorMessage = "It was not possible to scan COM ports at the startup stage, try to do it through the \"Scan COM-ports\" button";
+                if (GetLanguage() == "en")
+                    ShowError(errorMessage);
+                else if (GetLanguage() == "ru")
+                    ShowError("Не удалось просканировать COM-порты на этапе запуска, попробуйте сделать это через кнопку \"Сканировать COM-порты\"");
+                else
+                    ShowError(errorMessage);
+            }
         }
 
         private void PowerSupplyUpdateCurrentVoltage()
@@ -159,7 +219,6 @@ namespace TusurUI
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
-            _comPortUpdateTimerManager.Stop();
             _currentVoltageUpdateTimerManager.Stop();
         }
 
@@ -419,5 +478,7 @@ namespace TusurUI
                 StopStepMotor();
             _scenariosWindow?.Close();
         }
+
+        private void ScanComPortsButton_Click(object sender, RoutedEventArgs e) { UpdateComPorts(); }
     }
 }

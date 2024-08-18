@@ -16,6 +16,8 @@
     <sys:String x:Key="VoltageValueLabel">Voltage</sys:String>
     <sys:String x:Key="PowerSupplyComPortTooltip">Power Supply COM Port</sys:String>
     <sys:String x:Key="ShutterComPortTooltip">Shutter COM Port</sys:String>
+    <sys:String x:Key="ScanComPortsButtonContent">Scan COM-ports</sys:String>
+    <sys:String x:Key="ScanComPortsTooltip">Start scanning COM ports. Fill in the corresponding drop-down lists for all COM ports found</sys:String>
     <sys:String x:Key="VaporizerLabel">Vaporizer</sys:String>
     <sys:String x:Key="OpenShutterButton">Open</sys:String>
     <sys:String x:Key="CloseShutterButton">Close</sys:String>
