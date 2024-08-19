@@ -679,7 +679,7 @@ namespace TusurUI
             var (hoursTextBox, minsTextBox, secsTextBox) = GetTimerTextBoxes(row);
             ProgressBar progressBar = row.Children.OfType<ProgressBar>().First(pb => pb.Name == "ProgressBar");
 
-            var timerManager = new PowerSupplyTimerManager(hoursTextBox, minsTextBox, secsTextBox, progressBar, _mainWindow.PowerSupplyTurnOff);
+            var timerManager = new PowerSupplyTimerManager(hoursTextBox, minsTextBox, secsTextBox, progressBar, dummy);
             _timerManagers.Add(timerManager);
             timerManager.StartCountdown(IsReverseCountdown());
 
@@ -693,6 +693,8 @@ namespace TusurUI
                 }
             }, token);
         }
+
+        public void dummy() { return; }
 
         public void StopProgram(Exception? ex = null)
         {
