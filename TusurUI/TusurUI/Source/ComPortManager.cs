@@ -39,14 +39,13 @@ namespace TusurUI.Source
 
                 if (availablePorts.Length > 0)
                 {
-                    // If the current ComboBox doesn't have a selected item from the available ports, select the first available port
                     if (!_comboBox.Items.Contains(_comboBox.SelectedItem))
                         _comboBox.SelectedIndex = 0;
                     _comboBox.IsEnabled = true;
                 }
                 else
                 {
-                    _comboBox.IsEnabled = false;
+                    _comboBox.IsEnabled = true; // Always enabled, no blocking
                 }
             }
             finally
