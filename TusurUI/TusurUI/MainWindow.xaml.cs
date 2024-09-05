@@ -136,8 +136,13 @@ namespace TusurUI
 
                 if (ports.Length > 0)
                 {
+                    // Temporarily disable event handlers to prevent looping
+                    PowerSupplyComPortComboBox.SelectionChanged -= ComboBox_SelectionChanged;
+                    ShutterComPortComboBox.SelectionChanged -= ComboBox_SelectionChanged;
+
                     if (ports.Length == 1)
                     {
+                        // Assign the only port to the power supply and disable the step motor
                         PowerSupplyComPortComboBox.ItemsSource = ports;
                         PowerSupplyComPortComboBox.SelectedIndex = 0;
                         PowerSupplyComPortComboBox.IsEnabled = true;
@@ -148,15 +153,22 @@ namespace TusurUI
                     }
                     else
                     {
+                        // If multiple ports, assign them to both devices
                         PowerSupplyComPortComboBox.ItemsSource = ports;
                         PowerSupplyComPortComboBox.SelectedIndex = 0;
                         PowerSupplyComPortComboBox.IsEnabled = true;
 
+                        // Assign another port to the step motor
                         ShutterComPortComboBox.ItemsSource = ports.Except(new[] { PowerSupplyComPortComboBox.SelectedItem.ToString() }).ToArray();
                         ShutterComPortComboBox.SelectedIndex = 0;
                         ShutterComPortComboBox.IsEnabled = true;
                     }
 
+                    // Re-enable event handlers after updating the ComboBox
+                    PowerSupplyComPortComboBox.SelectionChanged += ComboBox_SelectionChanged;
+                    ShutterComPortComboBox.SelectionChanged += ComboBox_SelectionChanged;
+
+                    // Display success message
                     string successMessage = GetLanguage() == "ru"
                         ? $"Найдены COM-порты: {string.Join(", ", ports)}"
                         : $"COM ports found: {string.Join(", ", ports)}";
@@ -164,6 +176,7 @@ namespace TusurUI
                 }
                 else
                 {
+                    // Display warning message when no ports are found
                     string warningMessage = GetLanguage() == "ru"
                         ? "Не было найдено ни одного COM-порта."
                         : "No COM-ports were found.";
@@ -175,6 +188,7 @@ namespace TusurUI
             }
             catch (Exception)
             {
+                // Handle exception and display error message
                 string errorMessage = GetLanguage() == "ru"
                     ? "Не удалось просканировать COM-порты на этапе запуска, попробуйте сделать это через кнопку \"Сканировать COM-порты\""
                     : "It was not possible to scan COM ports at the startup stage, try to do it through the \"Scan COM-ports\" button";
