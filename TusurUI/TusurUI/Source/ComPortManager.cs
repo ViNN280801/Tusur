@@ -15,6 +15,8 @@ namespace TusurUI.Source
     public class ComPortManager : IComPortManager
     {
         private readonly ComboBox _comboBox;
+        private bool _isPopulatingComboBoxes = false;
+
         public ComPortManager(ComboBox comboBox)
         {
             _comboBox = comboBox ?? throw new ArgumentNullException(nameof(comboBox));
@@ -22,28 +24,44 @@ namespace TusurUI.Source
 
         public void PopulateComPortComboBox(ComboBox otherComboBox)
         {
-            string[] ports = SerialPort.GetPortNames();
-            var availablePorts = ports.Except(new[] { otherComboBox.SelectedItem?.ToString() }).ToArray();
-            _comboBox.ItemsSource = availablePorts;
+            if (_isPopulatingComboBoxes)
+                return;
 
-            if (availablePorts.Length > 0)
-            {
-                if (!_comboBox.Items.Contains(_comboBox.SelectedItem))
-                    _comboBox.SelectedIndex = 0;
-                _comboBox.IsEnabled = true;
-            }
-            else
-                _comboBox.IsEnabled = false;
+            _isPopulatingComboBoxes = true;
 
-            if (ports.Length == 1)
+            try
             {
+                string[] ports = SerialPort.GetPortNames();
+                var availablePorts = ports.Except(new[] { otherComboBox.SelectedItem?.ToString() }).ToArray();
+                _comboBox.ItemsSource = availablePorts;
+
                 if (availablePorts.Length > 0)
-                    _comboBox.SelectedIndex = 0;
-                otherComboBox.SelectedIndex = -1;
-                otherComboBox.IsEnabled = false;
+                {
+                    if (!_comboBox.Items.Contains(_comboBox.SelectedItem))
+                        _comboBox.SelectedIndex = 0;
+                    _comboBox.IsEnabled = true;
+                }
+                else
+                {
+                    _comboBox.IsEnabled = false;
+                }
+
+                if (ports.Length == 1)
+                {
+                    if (availablePorts.Length > 0)
+                        _comboBox.SelectedIndex = 0;
+                    otherComboBox.SelectedIndex = -1;
+                    otherComboBox.IsEnabled = false;
+                }
+                else
+                {
+                    otherComboBox.IsEnabled = true;
+                }
             }
-            else
-                otherComboBox.IsEnabled = true;
+            finally
+            {
+                _isPopulatingComboBoxes = false;
+            }
         }
         public bool CheckComPort()
         {
