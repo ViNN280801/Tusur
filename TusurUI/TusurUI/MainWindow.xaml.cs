@@ -5,6 +5,7 @@ using TusurUI.Helpers;
 using TusurUI.Errors;
 using TusurUI.Logs;
 using System.Windows.Media;
+using System.IO.Ports;
 
 namespace TusurUI
 {
@@ -28,7 +29,6 @@ namespace TusurUI
         public MainWindow()
         {
             InitializeComponent();
-            UpdateComPorts(); // Filling COM-ports.
 
             _uiHelper = new UIHelper(Vaporizer, SystemStateLabel, VaporizerButtonBase, VaporizerButtonInside, Indicator, CurrentValueLabel, VoltageValueLabel);
             _currentVoltageUpdateTimerManager = new CurrentVoltageUpdateTimerManager(PowerSupplyUpdateCurrentVoltage, k_UpdateCurrentVoltageIntervalMilliseconds);
@@ -132,52 +132,50 @@ namespace TusurUI
         {
             try
             {
-                _powerSupplyComPortManager.PopulateComPortComboBox(ShutterComPortComboBox);
-                _stepMotorComPortManager.PopulateComPortComboBox(PowerSupplyComPortComboBox);
+                string[] ports = SerialPort.GetPortNames();
 
-                int shutterComPortsCount = ShutterComPortComboBox.Items.Count;
-                int powerSupplyComPortsCount = PowerSupplyComPortComboBox.Items.Count;
-
-                if (shutterComPortsCount > 0 || powerSupplyComPortsCount > 0)
+                if (ports.Length > 0)
                 {
-                    var foundPorts = new List<string>();
-                    if (shutterComPortsCount > 0)
-                        foundPorts.AddRange(ShutterComPortComboBox.Items.Cast<string>());
-                    if (powerSupplyComPortsCount > 0)
-                        foundPorts.AddRange(PowerSupplyComPortComboBox.Items.Cast<string>());
+                    if (ports.Length == 1)
+                    {
+                        _powerSupplyComPortManager.PopulateComPortComboBox(ShutterComPortComboBox);
+                        PowerSupplyComPortComboBox.SelectedIndex = 0;
+                        PowerSupplyComPortComboBox.IsEnabled = true;
 
-                    string successMessage;
-                    if (GetLanguage() == "en")
-                        successMessage = $"COM ports found: {string.Join(", ", foundPorts)}";
-                    else if (GetLanguage() == "ru")
-                        successMessage = $"Найдены COM-порты: {string.Join(", ", foundPorts)}";
+                        ShutterComPortComboBox.SelectedIndex = -1;
+                        ShutterComPortComboBox.IsEnabled = false;
+                    }
                     else
-                        successMessage = $"COM ports found: {string.Join(", ", foundPorts)}";
+                    {
+                        _powerSupplyComPortManager.PopulateComPortComboBox(ShutterComPortComboBox);
+                        _stepMotorComPortManager.PopulateComPortComboBox(PowerSupplyComPortComboBox);
 
+                        PowerSupplyComPortComboBox.IsEnabled = true;
+                        ShutterComPortComboBox.IsEnabled = true;
+                    }
+
+                    string successMessage = GetLanguage() == "ru"
+                        ? $"Найдены COM-порты: {string.Join(", ", ports)}"
+                        : $"COM ports found: {string.Join(", ", ports)}";
                     ShowSuccess(successMessage);
                 }
                 else
                 {
-                    string warningMessage;
-                    if (GetLanguage() == "en")
-                        warningMessage = "No COM-ports were found.";
-                    else if (GetLanguage() == "ru")
-                        warningMessage = "Не было найдено ни одного COM-порта.";
-                    else
-                        warningMessage = "No COM-ports were found.";
-
+                    string warningMessage = GetLanguage() == "ru"
+                        ? "Не было найдено ни одного COM-порта."
+                        : "No COM-ports were found.";
                     ShowWarning(warningMessage);
+
+                    PowerSupplyComPortComboBox.IsEnabled = false;
+                    ShutterComPortComboBox.IsEnabled = false;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                string errorMessage = "It was not possible to scan COM ports at the startup stage, try to do it through the \"Scan COM-ports\" button";
-                if (GetLanguage() == "en")
-                    ShowError(errorMessage);
-                else if (GetLanguage() == "ru")
-                    ShowError("Не удалось просканировать COM-порты на этапе запуска, попробуйте сделать это через кнопку \"Сканировать COM-порты\"");
-                else
-                    ShowError(errorMessage);
+                string errorMessage = GetLanguage() == "ru"
+                    ? "Не удалось просканировать COM-порты на этапе запуска, попробуйте сделать это через кнопку \"Сканировать COM-порты\""
+                    : "It was not possible to scan COM ports at the startup stage, try to do it through the \"Scan COM-ports\" button";
+                ShowError(errorMessage);
             }
         }
 
@@ -424,7 +422,7 @@ namespace TusurUI
             _scenariosWindow.Show();
             AddScenarioButton.IsEnabled = false;
         }
-        public async Task StartScenarioForStage(ushort current, TimeSpan duration) 
+        public async Task StartScenarioForStage(ushort current, TimeSpan duration)
         {
             if (!AreComPortsValid())
                 return;
