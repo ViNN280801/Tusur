@@ -136,50 +136,21 @@ namespace TusurUI
 
                 if (ports.Length > 0)
                 {
-                    // Temporarily disable event handlers to prevent looping
-                    PowerSupplyComPortComboBox.SelectionChanged -= ComboBox_SelectionChanged;
-                    ShutterComPortComboBox.SelectionChanged -= ComboBox_SelectionChanged;
+                    // Populate both ComboBoxes with available COM ports
+                    _powerSupplyComPortManager.PopulateComPortComboBox(ShutterComPortComboBox);
+                    _stepMotorComPortManager.PopulateComPortComboBox(PowerSupplyComPortComboBox);
 
-                    if (ports.Length == 1)
-                    {
-                        // Assign the only port to the power supply and disable the step motor
-                        PowerSupplyComPortComboBox.ItemsSource = ports;
-                        PowerSupplyComPortComboBox.SelectedIndex = 0;
-                        PowerSupplyComPortComboBox.IsEnabled = true;
-
-                        ShutterComPortComboBox.ItemsSource = null;
-                        ShutterComPortComboBox.SelectedIndex = -1;
-                        ShutterComPortComboBox.IsEnabled = false;
-                    }
-                    else
-                    {
-                        // If multiple ports, assign them to both devices
-                        PowerSupplyComPortComboBox.ItemsSource = ports;
-                        PowerSupplyComPortComboBox.SelectedIndex = 0;
-                        PowerSupplyComPortComboBox.IsEnabled = true;
-
-                        // Assign another port to the step motor
-                        ShutterComPortComboBox.ItemsSource = ports.Except(new[] { PowerSupplyComPortComboBox.SelectedItem.ToString() }).ToArray();
-                        ShutterComPortComboBox.SelectedIndex = 0;
-                        ShutterComPortComboBox.IsEnabled = true;
-                    }
-
-                    // Re-enable event handlers after updating the ComboBox
-                    PowerSupplyComPortComboBox.SelectionChanged += ComboBox_SelectionChanged;
-                    ShutterComPortComboBox.SelectionChanged += ComboBox_SelectionChanged;
-
-                    // Display success message
-                    string successMessage = GetLanguage() == "ru"
-                        ? $"Найдены COM-порты: {string.Join(", ", ports)}"
-                        : $"COM ports found: {string.Join(", ", ports)}";
+                    string successMessage = GetLanguage() == "en"
+                        ? $"COM ports found: {string.Join(", ", ports)}"
+                        : $"Найдены COM-порты: {string.Join(", ", ports)}";
                     ShowSuccess(successMessage);
                 }
                 else
                 {
-                    // Display warning message when no ports are found
-                    string warningMessage = GetLanguage() == "ru"
-                        ? "Не было найдено ни одного COM-порта."
-                        : "No COM-ports were found.";
+                    // No COM ports found, disable both ComboBoxes
+                    string warningMessage = GetLanguage() == "en"
+                        ? "No COM-ports were found."
+                        : "Не было найдено ни одного COM-порта.";
                     ShowWarning(warningMessage);
 
                     PowerSupplyComPortComboBox.IsEnabled = false;
@@ -188,10 +159,10 @@ namespace TusurUI
             }
             catch (Exception)
             {
-                // Handle exception and display error message
-                string errorMessage = GetLanguage() == "ru"
-                    ? "Не удалось просканировать COM-порты на этапе запуска, попробуйте сделать это через кнопку \"Сканировать COM-порты\""
-                    : "It was not possible to scan COM ports at the startup stage, try to do it through the \"Scan COM-ports\" button";
+                // Handle errors during COM port scanning
+                string errorMessage = GetLanguage() == "en"
+                    ? "It was not possible to scan COM ports at the startup stage, try to do it through the \"Scan COM-ports\" button"
+                    : "Не удалось просканировать COM-порты на этапе запуска, попробуйте сделать это через кнопку \"Сканировать COM-порты\"";
                 ShowError(errorMessage);
             }
         }
@@ -248,9 +219,29 @@ namespace TusurUI
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (sender == PowerSupplyComPortComboBox)
+            {
+                // If the selected port in PowerSupplyComboBox is the same as in ShutterComboBox, clear ShutterComboBox
+                if (PowerSupplyComPortComboBox.SelectedItem != null &&
+                    PowerSupplyComPortComboBox.SelectedItem.ToString() == ShutterComPortComboBox.SelectedItem?.ToString())
+                {
+                    ShutterComPortComboBox.SelectedIndex = -1; // Clear the selected item in ShutterComPortComboBox
+                }
+
+                // Repopulate ShutterComPortComboBox with available ports excluding the one selected in PowerSupplyComPortComboBox
                 _stepMotorComPortManager.PopulateComPortComboBox(PowerSupplyComPortComboBox);
+            }
             else if (sender == ShutterComPortComboBox)
+            {
+                // If the selected port in ShutterComboBox is the same as in PowerSupplyComboBox, clear PowerSupplyComboBox
+                if (ShutterComPortComboBox.SelectedItem != null &&
+                    ShutterComPortComboBox.SelectedItem.ToString() == PowerSupplyComPortComboBox.SelectedItem?.ToString())
+                {
+                    PowerSupplyComPortComboBox.SelectedIndex = -1; // Clear the selected item in PowerSupplyComPortComboBox
+                }
+
+                // Repopulate PowerSupplyComPortComboBox with available ports excluding the one selected in ShutterComPortComboBox
                 _powerSupplyComPortManager.PopulateComPortComboBox(ShutterComPortComboBox);
+            }
         }
 
         private void OpenShutter()

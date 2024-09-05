@@ -32,11 +32,14 @@ namespace TusurUI.Source
             try
             {
                 string[] ports = SerialPort.GetPortNames();
+
+                // Exclude the port selected in the other ComboBox
                 var availablePorts = ports.Except(new[] { otherComboBox.SelectedItem?.ToString() }).ToArray();
                 _comboBox.ItemsSource = availablePorts;
 
                 if (availablePorts.Length > 0)
                 {
+                    // If the current ComboBox doesn't have a selected item from the available ports, select the first available port
                     if (!_comboBox.Items.Contains(_comboBox.SelectedItem))
                         _comboBox.SelectedIndex = 0;
                     _comboBox.IsEnabled = true;
@@ -44,18 +47,6 @@ namespace TusurUI.Source
                 else
                 {
                     _comboBox.IsEnabled = false;
-                }
-
-                if (ports.Length == 1)
-                {
-                    if (availablePorts.Length > 0)
-                        _comboBox.SelectedIndex = 0;
-                    otherComboBox.SelectedIndex = -1;
-                    otherComboBox.IsEnabled = false;
-                }
-                else
-                {
-                    otherComboBox.IsEnabled = true;
                 }
             }
             finally
