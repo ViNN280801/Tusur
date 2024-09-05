@@ -138,19 +138,22 @@ namespace TusurUI
                 {
                     if (ports.Length == 1)
                     {
-                        _powerSupplyComPortManager.PopulateComPortComboBox(ShutterComPortComboBox);
+                        PowerSupplyComPortComboBox.ItemsSource = ports;
                         PowerSupplyComPortComboBox.SelectedIndex = 0;
                         PowerSupplyComPortComboBox.IsEnabled = true;
 
+                        ShutterComPortComboBox.ItemsSource = null;
                         ShutterComPortComboBox.SelectedIndex = -1;
                         ShutterComPortComboBox.IsEnabled = false;
                     }
                     else
                     {
-                        _powerSupplyComPortManager.PopulateComPortComboBox(ShutterComPortComboBox);
-                        _stepMotorComPortManager.PopulateComPortComboBox(PowerSupplyComPortComboBox);
-
+                        PowerSupplyComPortComboBox.ItemsSource = ports;
+                        PowerSupplyComPortComboBox.SelectedIndex = 0;
                         PowerSupplyComPortComboBox.IsEnabled = true;
+
+                        ShutterComPortComboBox.ItemsSource = ports.Except(new[] { PowerSupplyComPortComboBox.SelectedItem.ToString() }).ToArray();
+                        ShutterComPortComboBox.SelectedIndex = 0;
                         ShutterComPortComboBox.IsEnabled = true;
                     }
 
@@ -170,7 +173,7 @@ namespace TusurUI
                     ShutterComPortComboBox.IsEnabled = false;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 string errorMessage = GetLanguage() == "ru"
                     ? "Не удалось просканировать COM-порты на этапе запуска, попробуйте сделать это через кнопку \"Сканировать COM-порты\""
