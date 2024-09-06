@@ -39,8 +39,6 @@ namespace TusurUI.Source
 
                 if (availablePorts.Length > 0)
                 {
-                    if (!_comboBox.Items.Contains(_comboBox.SelectedItem))
-                        _comboBox.SelectedIndex = 0;
                     _comboBox.IsEnabled = true;
                 }
                 else

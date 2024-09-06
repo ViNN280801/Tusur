@@ -220,28 +220,41 @@ namespace TusurUI
         {
             if (sender == PowerSupplyComPortComboBox)
             {
-                // If the selected port in PowerSupplyComboBox is the same as in ShutterComboBox, clear ShutterComboBox
+                // If the selected port in PowerSupplyComboBox is the same as in ShutterComPortComboBox, clear ShutterComPortComboBox selection
                 if (PowerSupplyComPortComboBox.SelectedItem != null &&
                     PowerSupplyComPortComboBox.SelectedItem.ToString() == ShutterComPortComboBox.SelectedItem?.ToString())
                 {
-                    ShutterComPortComboBox.SelectedIndex = -1; // Clear the selected item in ShutterComPortComboBox
+                    ShutterComPortComboBox.SelectedIndex = -1; // Clear the selection in ShutterComPortComboBox
                 }
-
-                // Repopulate ShutterComPortComboBox with available ports excluding the one selected in PowerSupplyComPortComboBox
-                _stepMotorComPortManager.PopulateComPortComboBox(PowerSupplyComPortComboBox);
             }
             else if (sender == ShutterComPortComboBox)
             {
-                // If the selected port in ShutterComboBox is the same as in PowerSupplyComboBox, clear PowerSupplyComboBox
+                // If the selected port in ShutterComPortComboBox is the same as in PowerSupplyComPortComboBox, clear PowerSupplyComPortComboBox selection
                 if (ShutterComPortComboBox.SelectedItem != null &&
                     ShutterComPortComboBox.SelectedItem.ToString() == PowerSupplyComPortComboBox.SelectedItem?.ToString())
                 {
-                    PowerSupplyComPortComboBox.SelectedIndex = -1; // Clear the selected item in PowerSupplyComPortComboBox
+                    PowerSupplyComPortComboBox.SelectedIndex = -1; // Clear the selection in PowerSupplyComPortComboBox
                 }
-
-                // Repopulate PowerSupplyComPortComboBox with available ports excluding the one selected in ShutterComPortComboBox
-                _powerSupplyComPortManager.PopulateComPortComboBox(ShutterComPortComboBox);
             }
+        }
+
+        private void UpdateAvailablePorts(ComboBox comboBoxToUpdate, string portToExclude)
+        {
+            string[] ports = SerialPort.GetPortNames();
+
+            // Exclude the selected port from the other ComboBox
+            var availablePorts = ports.Except(new[] { portToExclude }).ToArray();
+
+            comboBoxToUpdate.SelectionChanged -= ComboBox_SelectionChanged; // Temporarily disable event handler
+            comboBoxToUpdate.ItemsSource = availablePorts;
+
+            // If the currently selected port is no longer available, clear the selection
+            if (!availablePorts.Contains(comboBoxToUpdate.SelectedItem?.ToString()))
+            {
+                comboBoxToUpdate.SelectedIndex = -1;
+            }
+
+            comboBoxToUpdate.SelectionChanged += ComboBox_SelectionChanged; // Re-enable event handler
         }
 
         private void OpenShutter()
