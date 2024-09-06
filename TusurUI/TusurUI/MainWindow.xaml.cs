@@ -288,7 +288,7 @@ namespace TusurUI
             ExecuteWithErrorHandling(() =>
             {
                 string comPort = _stepMotorComPortManager.GetComPortName();
-                _stepMotorManager.Reverse(comPort);
+                _stepMotorManager.Stop(comPort);
                 ColorizeStopStepMotorButton();
             });
         }
