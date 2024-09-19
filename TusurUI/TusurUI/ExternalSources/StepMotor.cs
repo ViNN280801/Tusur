@@ -66,10 +66,10 @@ namespace TusurUI.ExternalSources
                 1 => "Failed to initialize connection.",
                 2 => "Failed to set device as slave.",
                 3 => "Failed to connect to the device.",
-                4 => "Failed to set register 512 to 1.",
-                5 => "Failed to set register 513 to 1.",
-                6 => "Failed to set register 512 to 0.",
-                7 => "Failed to set register 513 to 0.",
+                4 => "The stepper motor could not be started in FORWARD mode (set the value of 512 register to 1).",
+                5 => "The stepper motor could not be started in REVERSE mode (set the value of 513 registers to 1).",
+                6 => "It was not possible to reset the FORWARD mode of the stepper motor (set the value of 512 register to 0).",
+                7 => "It was not possible to reset the REVERSE mode of the stepper motor (set the value of register 513 to 0).",
                 8 => "Shutter already closed.",
                 _ => "Unknown error."
             };
@@ -83,10 +83,10 @@ namespace TusurUI.ExternalSources
                 1 => "Не удалось инициализировать соединение.",
                 2 => "Не удалось установить устройство как slave.",
                 3 => "Не удалось подключиться к устройству.",
-                4 => "Не удалось установить значение 512 регистра в 1.",
-                5 => "Не удалось установить значение 513 регистра в 1.",
-                6 => "Не удалось установить значение 512 регистра в 0.",
-                7 => "Не удалось установить значение 513 регистра в 0.",
+                4 => "Не удалось запустить шаговый двигатель в режиме FORWARD (установить значение 512 регистра в 1).",
+                5 => "Не удалось запустить шаговый двигатель в режиме REVERSE (установить значение 513 регистра в 1).",
+                6 => "Не удалось произвести сброс режима FORWARD у шагового двигателя (установить значение 512 регистра в 0).",
+                7 => "Не удалось произвести сброс режима REVERSE у шагового двигателя (установить значение 513 регистра в 0).",
                 8 => "Заслонка уже закрыта.",
                 _ => "Неизвестная ошибка."
             };
