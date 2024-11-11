@@ -17,7 +17,7 @@ PowerSupplyManager::~PowerSupplyManager() {}
 int PowerSupplyManager::connect(const char* port)
 {
 	// 1. Initializing connection.
-	m_ctx.reset(modbus_new_rtu(port, 19200, 'E', 8, 1));
+	m_ctx.reset(modbus_new_rtu(port, 19200, 'N', 8, 1));
 	if (!m_ctx)
 		return PS_ERROR_INIT_CONNECTION_FAILED;
 
